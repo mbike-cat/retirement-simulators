@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>退休資產、年金與現金流模擬器工具箱 | Retirement Wealth, Annuity & Cash Flow Simulators Portal</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --border-color: #333333;
+            --accent-color: #64b5f6;
+            --accent-hover: #42a5f5;
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --tag-bg: #2a2a2a;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 24px;
+        }
+
+        .header h1 {
+            color: #ffffff;
+            font-size: 1.8rem;
+            margin: 0 0 8px 0;
+            font-weight: 700;
+        }
+
+        .header .subtitle-en {
+            color: var(--accent-color);
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0 0 12px 0;
+        }
+
+        .header p.description {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        .portal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-color);
+            box-shadow: 0 8px 20px rgba(100, 181, 246, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .card-badge {
+            font-size: 0.75rem;
+            background: var(--tag-bg);
+            color: var(--accent-color);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid #3d3d3d;
+            font-weight: 600;
+        }
+
+        .card h2 {
+            font-size: 1.25rem;
+            color: #ffffff;
+            margin: 0 0 12px 0;
+            line-height: 1.4;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: 0 0 20px 0;
+            flex-grow: 1;
+        }
+
+        .btn {
+            display: block;
+            background: var(--accent-color);
+            color: #000000;
+            font-weight: 700;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-align: center;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+        }
+
+        footer {
+            margin-top: 60px;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 24px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        footer strong {
+            color: #ffffff;
+        }
+
+        footer .disclaimer {
+            font-size: 0.75rem;
+            color: #777777;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <header class="header">
+        <h1>退休資產、年金與現金流模擬器工具箱</h1>
+        <div class="subtitle-en">Retirement Wealth, Annuity & Cash Flow Simulators Portal</div>
+        <p class="description">
+            歡迎使用互動式退休規劃工具箱。本站整合通用資產提領模型與香港年金/社署長生津動態模擬，幫助您評估通漲率、資產配置與政府補貼對長期實質購買力的影響。
+        </p>
+    </header>
+
+    <main class="portal-grid">
+
+        <!-- 工具 1 -->
+        <article class="card">
+            <div>
+                <div class="card-header">
+                    <span class="card-badge">通用財務模型</span>
+                </div>
+                <h2>1. 退休資產與實質購買力提領模擬器</h2>
+                <p>
+                    適合通用退休資產規劃。評估股票與債券動態配置，在考慮預期通脹與購買力折損下，觀察提領金額演變與 4% 法則安全邊界。
+                </p>
+            </div>
+            <a href="asset_withdrawal_simulator_0.1.html" class="btn">開啟模擬器 1 →</a>
+        </article>
+
+        <!-- 工具 2 -->
+        <article class="card">
+            <div>
+                <div class="card-header">
+                    <span class="card-badge">香港專用政策</span>
+                </div>
+                <h2>2. 香港年金 + 長生津與實質購買力模擬器 (2026)</h2>
+                <p>
+                    專為香港地區規劃設計。整合香港年金（HKMC）、社署長者生活津貼審查（OALA）與私人股債收益，動態計算每月實質現金流與資格變化。
+                </p>
+            </div>
+            <a href="hkmc_oala_simulator_2026_0.1.html" class="btn">開啟模擬器 2 →</a>
+        </article>
+
+    </main>
+
+    <footer>
+        <p>Created by <strong>Anthony c t LEE</strong>, Sep 2026.</p>
+        <p class="disclaimer">
+            Disclaimer: These simulators are for educational and informational purposes only and do not constitute financial advice.
+        </p>
+    </footer>
+
+</div>
+
+</body>
+</html>
