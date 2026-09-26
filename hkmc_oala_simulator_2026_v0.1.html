@@ -3,7 +3,7 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>2026年度香港年金 + 長生津與實質購買力模擬器 v0.2</title>
+ <title>2026年度香港年金 + 長生津與實質購買力模擬器 v0.21</title>
  <!-- Chart.js CDN -->
  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
  <style>
@@ -343,7 +343,7 @@
  <div class="app-header">
  <h1 class="app-title-zh">2026年度香港年金 + 長生津與實質購買力模擬器</h1>
  <div class="app-title-en">2026 HK Annuity & OALA Purchasing Power Simulator</div>
- <p class="app-subtitle">版本 v0.2</p>
+ <p class="app-subtitle">版本 v0.21</p>
  </div>
 
  <!-- 1. 參數調整與設定 -->
@@ -374,7 +374,7 @@
  </div>
  <div class="control-group" id="grp_single_annuity">
  <div class="control-label"><span>購入香港年金金額</span><span class="value-display" id="val_single_annuity">$2,000,000</span></div>
- <input type="range" id="param_single_annuity" min="500000" max="5000000" step="100000" value="2000000">
+ <input type="range" id="param_single_annuity_step" min="0" max="50" step="1" value="20">
  </div>
 
  <!-- 夫婦：丈夫 -->
@@ -390,7 +390,7 @@
  </div>
  <div class="control-group hidden" id="grp_husband_annuity">
  <div class="control-label"><span>丈夫年金金額</span><span class="value-display" id="val_husband_annuity">$1,000,000</span></div>
- <input type="range" id="param_husband_annuity" min="500000" max="5000000" step="100000" value="1000000">
+ <input type="range" id="param_husband_annuity_step" min="0" max="50" step="1" value="10">
  </div>
 
  <!-- 夫婦：妻子 -->
@@ -406,19 +406,19 @@
  </div>
  <div class="control-group hidden" id="grp_wife_annuity">
  <div class="control-label"><span>妻子年金金額</span><span class="value-display" id="val_wife_annuity">$1,000,000</span></div>
- <input type="range" id="param_wife_annuity" min="500000" max="5000000" step="100000" value="1000000">
+ <input type="range" id="param_wife_annuity_step" min="0" max="50" step="1" value="10">
  </div>
 
  <!-- 手頭最初資產 -->
  <div class="control-group">
  <div class="control-label"><span>手頭最初資產 (現金/股債)</span><span class="value-display" id="val_initial_asset">$100,000</span></div>
- <input type="range" id="param_initial_asset" min="0" max="6000000" step="50000" value="100000">
+ <input type="range" id="param_initial_asset_step" min="0" max="120" step="1" value="10">
  </div>
 
  <!-- 其他每月入息 -->
  <div class="control-group">
  <div class="control-label"><span>其他每月總入息 (租金/兼職等)</span><span class="value-display" id="val_other_income">$0</span></div>
- <input type="range" id="param_other_income" min="0" max="20000" step="500" value="0">
+ <input type="range" id="param_other_income_step" min="0" max="36" step="1" value="0">
  </div>
 
  <!-- 基本年通脹率 -->
@@ -528,6 +528,39 @@
 </div>
 
 <script>
+ // 分段階梯映射函數
+ // 1. 年金金額: $50萬~$100萬每步$5萬(10步, step 0~10); $100萬~$500萬每步$10萬(40步, step 10~50)
+ function getAnnuityAmountFromStep(step) {
+ step = Number(step);
+ if (step <= 10) {
+ return 500000 + step * 50000;
+ } else {
+ return 1000000 + (step - 10) * 100000;
+ }
+ }
+
+ // 2. 手頭最初資產: $0~$50萬每步$1萬(50步, step 0~50); $50萬~$200萬每步$5萬(30步, step 50~80); $200萬~$600萬每步$10萬(40步, step 80~120)
+ function getInitialAssetFromStep(step) {
+ step = Number(step);
+ if (step <= 50) {
+ return step * 10000;
+ } else if (step <= 80) {
+ return 500000 + (step - 50) * 50000;
+ } else {
+ return 2000000 + (step - 80) * 100000;
+ }
+ }
+
+ // 3. 其他每月總入息: $0~$1萬每步$500(20步, step 0~20); $1萬~$5萬每步$2,500(16步, step 20~36)
+ function getOtherIncomeFromStep(step) {
+ step = Number(step);
+ if (step <= 20) {
+ return step * 500;
+ } else {
+ return 10000 + (step - 20) * 2500;
+ }
+ }
+
  window.addEventListener('DOMContentLoaded', () => {
  const formatCurrency = (val) => '$' + Number(val).toLocaleString('en-US');
  const formatPercent = (val) => Number(val).toFixed(2) + '%';
@@ -564,13 +597,13 @@
  const isWifeBuy = document.getElementById('chk_wife_buy').checked;
 
  if (isHusbandBuy && husbandAge >= 60) {
- const hAmt = parseFloat(document.getElementById('param_husband_annuity').value);
+ const hAmt = getAnnuityAmountFromStep(document.getElementById('param_husband_annuity_step').value);
  const hRate = getAnnuityRatePerMillion('male', husbandAge);
  monthlyAnnuity += (hAmt / 1000000 * hRate);
  }
 
  if (isWifeBuy && wifeAge >= 60) {
- const wAmt = parseFloat(document.getElementById('param_wife_annuity').value);
+ const wAmt = getAnnuityAmountFromStep(document.getElementById('param_wife_annuity_step').value);
  const wRate = getAnnuityRatePerMillion('female', wifeAge);
  monthlyAnnuity += (wAmt / 1000000 * wRate);
  }
@@ -578,7 +611,7 @@
  const isSingleBuy = document.getElementById('chk_single_buy').checked;
  if (isSingleBuy && singleAge >= 60) {
  const gender = mode === 'single_female' ? 'female' : 'male';
- const amt = parseFloat(document.getElementById('param_single_annuity').value);
+ const amt = getAnnuityAmountFromStep(document.getElementById('param_single_annuity_step').value);
  const rate = getAnnuityRatePerMillion(gender, singleAge);
  monthlyAnnuity = (amt / 1000000 * rate);
  }
@@ -591,8 +624,8 @@
  husbandAge,
  wifeAge,
  monthlyAnnuity,
- initial_asset: parseFloat(document.getElementById('param_initial_asset').value),
- other_income: parseFloat(document.getElementById('param_other_income').value),
+ initial_asset: getInitialAssetFromStep(document.getElementById('param_initial_asset_step').value),
+ other_income: getOtherIncomeFromStep(document.getElementById('param_other_income_step').value),
  base_inflation: parseFloat(document.getElementById('param_base_inflation').value) / 100,
  extra_discount: parseFloat(document.getElementById('param_extra_discount').value) / 100,
  stock_pct: parseFloat(document.getElementById('param_stock_pct').value),
@@ -832,17 +865,23 @@
  const isHusbandBuy = document.getElementById('chk_husband_buy').checked;
  const isWifeBuy = document.getElementById('chk_wife_buy').checked;
 
+ const singleAnnuityVal = getAnnuityAmountFromStep(document.getElementById('param_single_annuity_step').value);
+ const husbandAnnuityVal = getAnnuityAmountFromStep(document.getElementById('param_husband_annuity_step').value);
+ const wifeAnnuityVal = getAnnuityAmountFromStep(document.getElementById('param_wife_annuity_step').value);
+ const initialAssetVal = getInitialAssetFromStep(document.getElementById('param_initial_asset_step').value);
+ const otherIncomeVal = getOtherIncomeFromStep(document.getElementById('param_other_income_step').value);
+
  document.getElementById('val_single_age').textContent = formatAge(document.getElementById('param_single_age').value);
- document.getElementById('val_single_annuity').textContent = isSingleBuy ? formatCurrency(document.getElementById('param_single_annuity').value) : '$0';
+ document.getElementById('val_single_annuity').textContent = isSingleBuy ? formatCurrency(singleAnnuityVal) : '$0';
 
  document.getElementById('val_husband_age').textContent = formatAge(document.getElementById('param_husband_age').value);
- document.getElementById('val_husband_annuity').textContent = isHusbandBuy ? formatCurrency(document.getElementById('param_husband_annuity').value) : '$0';
+ document.getElementById('val_husband_annuity').textContent = isHusbandBuy ? formatCurrency(husbandAnnuityVal) : '$0';
  
  document.getElementById('val_wife_age').textContent = formatAge(document.getElementById('param_wife_age').value);
- document.getElementById('val_wife_annuity').textContent = isWifeBuy ? formatCurrency(document.getElementById('param_wife_annuity').value) : '$0';
+ document.getElementById('val_wife_annuity').textContent = isWifeBuy ? formatCurrency(wifeAnnuityVal) : '$0';
 
- document.getElementById('val_initial_asset').textContent = formatCurrency(document.getElementById('param_initial_asset').value);
- document.getElementById('val_other_income').textContent = formatCurrency(document.getElementById('param_other_income').value);
+ document.getElementById('val_initial_asset').textContent = formatCurrency(initialAssetVal);
+ document.getElementById('val_other_income').textContent = formatCurrency(otherIncomeVal);
  document.getElementById('val_base_inflation').textContent = formatPercent(document.getElementById('param_base_inflation').value);
  document.getElementById('val_extra_discount').textContent = formatPercent(document.getElementById('param_extra_discount').value);
  document.getElementById('val_stock_pct').textContent = document.getElementById('param_stock_pct').value + '%';
