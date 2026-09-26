@@ -1,693 +1,727 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wealth_Accum_Simulator.html</title>
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    :root {
-      --bg-color: #121212;
-      --card-bg: #1e1e1e;
-      --inner-card-bg: #181818;
-      --border-color: #333333;
-      --text-main: #e0e0e0;
-      --text-muted: #a0a0a0;
-      --control-bg: #2a2a2a;
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Wealth_Accum_Simulator.html</title>
+ <!-- Chart.js CDN -->
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+ <style>
+ :root {
+ --bg-color: #121212;
+ --card-bg: #1e1e1e;
+ --inner-card-bg: #181818;
+ --border-color: #333333;
+ --text-main: #e0e0e0;
+ --text-muted: #a0a0a0;
+ --control-bg: #2a2a2a;
 
-      --chart-custom-nominal: #64b5f6;
-      --chart-custom-real: #81c784;
-      --chart-benchmark: #ffb74d;
-      --chart-monthly: #ba68c8;
-      --chart-rate: #ffd54f;
-      --status-ok: #81c784;
-      --status-warn: #ffb74d;
-    }
+ --chart-custom-nominal: #64b5f6;
+ --chart-custom-real: #81c784;
+ --chart-benchmark: #ffb74d;
+ --chart-monthly: #ba68c8;
+ --chart-rate: #ffd54f;
+ --status-ok: #81c784;
+ --status-warn: #ffb74d;
+ }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      margin: 0;
-      padding: 12px;
-    }
+ body {
+ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+ background-color: var(--bg-color);
+ color: var(--text-main);
+ margin: 0;
+ padding: 12px;
+ }
 
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-      background: var(--card-bg);
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-      padding: 16px;
-      border: 1px solid var(--border-color);
-    }
+ .container {
+ max-width: 900px;
+ margin: 0 auto;
+ background: var(--card-bg);
+ border-radius: 12px;
+ box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+ padding: 16px;
+ border: 1px solid var(--border-color);
+ }
 
-    .nav-back {
-      margin-bottom: 12px;
-    }
+ .nav-back {
+ margin-bottom: 12px;
+ }
 
-    .nav-back a {
-      color: var(--chart-custom-nominal);
-      text-decoration: none;
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
+ .nav-back a {
+ color: var(--chart-custom-nominal);
+ text-decoration: none;
+ font-size: 0.85rem;
+ font-weight: 600;
+ }
 
-    .nav-back a:hover {
-      text-decoration: underline;
-    }
+ .nav-back a:hover {
+ text-decoration: underline;
+ }
 
-    .app-header {
-      text-align: center;
-      margin-bottom: 20px;
-      border-bottom: 2px solid var(--border-color);
-      padding-bottom: 12px;
-    }
+ .app-header {
+ text-align: center;
+ margin-bottom: 20px;
+ border-bottom: 2px solid var(--border-color);
+ padding-bottom: 12px;
+ }
 
-    .app-title-zh {
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: #ffffff;
-      margin: 0 0 6px 0;
-      line-height: 1.3;
-    }
+ .app-title-zh {
+ font-size: 1.35rem;
+ font-weight: 700;
+ color: #ffffff;
+ margin: 0 0 6px 0;
+ line-height: 1.3;
+ }
 
-    .app-title-en {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--chart-custom-nominal);
-      margin: 0 0 6px 0;
-      line-height: 1.3;
-    }
+ .app-title-en {
+ font-size: 0.9rem;
+ font-weight: 600;
+ color: var(--chart-custom-nominal);
+ margin: 0 0 6px 0;
+ line-height: 1.3;
+ }
 
-    .app-subtitle {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin: 0;
-    }
+ .app-subtitle {
+ font-size: 0.8rem;
+ color: var(--text-muted);
+ margin: 0;
+ }
 
-    /* Controls Section */
-    .controls-card {
-      background: var(--inner-card-bg);
-      border: 1px solid #2e2e2e;
-      border-radius: 10px;
-      padding: 14px;
-      margin-bottom: 20px;
-    }
+ /* Controls Section */
+ .controls-card {
+ background: var(--inner-card-bg);
+ border: 1px solid #2e2e2e;
+ border-radius: 10px;
+ padding: 14px;
+ margin-bottom: 20px;
+ }
 
-    .controls-title {
-      font-size: 1rem;
-      font-weight: bold;
-      margin-bottom: 14px;
-      color: #ffffff;
-      padding-left: 10px;
-      border-left: 4px solid var(--chart-benchmark);
-    }
+ .controls-title {
+ font-size: 1rem;
+ font-weight: bold;
+ margin-bottom: 14px;
+ color: #ffffff;
+ padding-left: 10px;
+ border-left: 4px solid var(--chart-benchmark);
+ }
 
-    .slider-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 10px;
-    }
+ .slider-grid {
+ display: grid;
+ grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+ gap: 10px;
+ }
 
-    .control-group {
-      background: var(--control-bg);
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 1px solid #383838;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
+ .control-group {
+ background: var(--control-bg);
+ padding: 8px 12px;
+ border-radius: 8px;
+ border: 1px solid #383838;
+ display: flex;
+ flex-direction: column;
+ gap: 4px;
+ }
 
-    .control-label {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--text-main);
-    }
+ .control-label {
+ display: flex;
+ justify-content: space-between;
+ font-size: 0.8rem;
+ font-weight: 600;
+ color: var(--text-main);
+ }
 
-    .value-display {
-      color: var(--chart-custom-nominal);
-      font-weight: bold;
-    }
+ .value-display {
+ color: var(--chart-custom-nominal);
+ font-weight: bold;
+ }
 
-    input[type="range"] {
-      width: 100%;
-      cursor: pointer;
-      accent-color: var(--chart-custom-nominal);
-    }
+ input[type="range"] {
+ width: 100%;
+ cursor: pointer;
+ accent-color: var(--chart-custom-nominal);
+ }
 
-    .sub-hint {
-      font-size: 0.7rem;
-      color: #888888;
-      margin-top: 2px;
-      line-height: 1.2;
-    }
+ .sub-hint {
+ font-size: 0.7rem;
+ color: #888888;
+ margin-top: 2px;
+ line-height: 1.2;
+ }
 
-    /* Summary Card (強制雙欄對照佈局) */
-    .summary-card {
-      background: var(--inner-card-bg);
-      border: 1px solid #2e2e2e;
-      border-radius: 10px;
-      padding: 14px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    }
+ /* Summary Card */
+ .summary-card {
+ background: var(--inner-card-bg);
+ border: 1px solid #2e2e2e;
+ border-radius: 10px;
+ padding: 14px;
+ margin-bottom: 20px;
+ box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+ }
 
-    .summary-title {
-      margin-top: 0;
-      margin-bottom: 12px;
-      color: #ffffff;
-      font-size: 1rem;
-      font-weight: 600;
-      padding-left: 10px;
-      border-left: 4px solid var(--status-ok);
-      line-height: 1.4;
-    }
+ .summary-title {
+ margin-top: 0;
+ margin-bottom: 12px;
+ color: #ffffff;
+ font-size: 1rem;
+ font-weight: 600;
+ padding-left: 10px;
+ border-left: 4px solid var(--status-ok);
+ line-height: 1.4;
+ }
 
-    .summary-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr; /* 強制保持雙欄，不因螢幕小而換行 */
-      gap: 10px;
-    }
+ .summary-grid {
+ display: grid;
+ grid-template-columns: 1fr 1fr;
+ gap: 10px;
+ }
 
-    .summary-item {
-      background: var(--control-bg);
-      padding: 10px 8px;
-      border-radius: 8px;
-      border: 1px solid #383838;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 4px;
-    }
+ .summary-item {
+ background: var(--control-bg);
+ padding: 10px 8px;
+ border-radius: 8px;
+ border: 1px solid #383838;
+ display: flex;
+ flex-direction: column;
+ justify-content: center;
+ gap: 4px;
+ }
 
-    .summary-item-full {
-      grid-column: 1 / -1;
-    }
+ .summary-item-full {
+ grid-column: 1 / -1;
+ }
 
-    .summary-item-label {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      line-height: 1.2;
-    }
+ .summary-item-label {
+ font-size: 0.75rem;
+ color: var(--text-muted);
+ line-height: 1.2;
+ }
 
-    .summary-item-value {
-      font-size: 1.05rem;
-      font-weight: bold;
-      color: #ffffff;
-      word-break: break-all;
-    }
+ .summary-item-value {
+ font-size: 1.05rem;
+ font-weight: bold;
+ color: #ffffff;
+ word-break: break-all;
+ }
 
-    /* 小螢幕字體微調，確保不破版 */
-    @media (max-width: 400px) {
-      .summary-item-label {
-        font-size: 0.7rem;
-      }
-      .summary-item-value {
-        font-size: 0.95rem;
-      }
-    }
+ @media (max-width: 400px) {
+ .summary-item-label {
+ font-size: 0.7rem;
+ }
+ .summary-item-value {
+ font-size: 0.95rem;
+ }
+ }
 
-    /* Chart Section */
-    .chart-card {
-      background: var(--inner-card-bg);
-      border: 1px solid #2e2e2e;
-      border-radius: 10px;
-      padding: 14px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    }
+ /* Chart Section */
+ .chart-card {
+ background: var(--inner-card-bg);
+ border: 1px solid #2e2e2e;
+ border-radius: 10px;
+ padding: 14px;
+ margin-bottom: 20px;
+ box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+ }
 
-    .chart-card-title {
-      margin-top: 0;
-      margin-bottom: 12px;
-      color: #ffffff;
-      font-size: 0.95rem;
-      font-weight: 600;
-      padding-left: 10px;
-      border-left: 4px solid var(--chart-custom-nominal);
-      line-height: 1.4;
-    }
+ .chart-card-title {
+ margin-top: 0;
+ margin-bottom: 12px;
+ color: #ffffff;
+ font-size: 0.95rem;
+ font-weight: 600;
+ padding-left: 10px;
+ border-left: 4px solid var(--chart-custom-nominal);
+ line-height: 1.4;
+ }
 
-    .chart-container {
-      position: relative;
-      width: 100%;
-      height: 280px;
-    }
+ .chart-container {
+ position: relative;
+ width: 100%;
+ height: 280px;
+ }
 
-    .footer-note {
-      margin-top: 16px;
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      line-height: 1.5;
-      border-top: 1px dashed var(--border-color);
-      padding-top: 12px;
-    }
+ .footer-note {
+ margin-top: 16px;
+ font-size: 0.78rem;
+ color: var(--text-muted);
+ line-height: 1.5;
+ border-top: 1px dashed var(--border-color);
+ padding-top: 12px;
+ }
 
-    .app-footer {
-      text-align: center;
-      margin-top: 20px;
-      padding-top: 14px;
-      border-top: 1px solid var(--border-color);
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
+ .app-footer {
+ text-align: center;
+ margin-top: 20px;
+ padding-top: 14px;
+ border-top: 1px solid var(--border-color);
+ font-size: 0.8rem;
+ color: var(--text-muted);
+ }
 
-    .app-footer a {
-      color: var(--chart-custom-nominal);
-      text-decoration: none;
-      font-weight: 600;
-    }
+ .app-footer a {
+ color: var(--chart-custom-nominal);
+ text-decoration: none;
+ font-weight: 600;
+ }
 
-    .app-footer a:hover {
-      text-decoration: underline;
-    }
+ .app-footer a:hover {
+ text-decoration: underline;
+ }
 
-    .app-footer .disclaimer {
-      font-size: 0.7rem;
-      color: #777777;
-      margin-top: 4px;
-    }
-  </style>
+ .app-footer .disclaimer {
+ font-size: 0.7rem;
+ color: #777777;
+ margin-top: 4px;
+ }
+ </style>
 </head>
 <body>
 
 <div class="container">
 
-  <div class="nav-back">
-    <a href="index.html">← 返回工具箱首頁</a>
-  </div>
+ <div class="nav-back">
+ <a href="index.html">← 返回工具箱首頁</a>
+ </div>
 
-  <div class="app-header">
-    <h1 class="app-title-zh">長期儲蓄與實質購買力積累模擬器</h1>
-    <div class="app-title-en">Wealth Accumulation & Purchasing Power Simulator</div>
-    <p class="app-subtitle">版本 v0.1</p>
-  </div>
+ <div class="app-header">
+ <h1 class="app-title-zh">長期儲蓄與實質購買力積累模擬器</h1>
+ <div class="app-title-en">Wealth Accumulation & Purchasing Power Simulator</div>
+ <p class="app-subtitle">版本 v0.2</p>
+ </div>
 
-  <!-- 1. 參數設定 -->
-  <div class="controls-card">
-    <div class="controls-title">儲蓄與投資參數設定</div>
+ <!-- 1. 參數設定 -->
+ <div class="controls-card">
+ <div class="controls-title">儲蓄與投資參數設定</div>
 
-    <div class="slider-grid">
-      <div class="control-group">
-        <div class="control-label">
-          <span>現有初始儲蓄本金</span>
-          <span class="value-display" id="val_initial">$200,000</span>
-        </div>
-        <input type="range" id="param_initial" min="0" max="5000000" step="50000" value="200000">
-      </div>
+ <div class="slider-grid">
+ <!-- 1.1 現有初始儲蓄本金 (梯級 0 ~ 1,000萬, 減半後步長: 2.5k / 25k / 250k, 預設 20萬/index=44) -->
+ <div class="control-group">
+ <div class="control-label">
+ <span>現有初始儲蓄本金</span>
+ <span class="value-display" id="val_initial">$200,000</span>
+ </div>
+ <input type="range" id="param_initial_step" min="0" max="112" step="1" value="44">
+ </div>
 
-      <div class="control-group">
-        <div class="control-label">
-          <span>首年每月儲蓄額</span>
-          <span class="value-display" id="val_monthly">$10,000</span>
-        </div>
-        <input type="range" id="param_monthly" min="1000" max="100000" step="1000" value="10000">
-      </div>
+ <!-- 1.2 首年每月儲蓄額 (梯級 0 ~ 20萬, 減半後步長: 250 / 1.25k / 5k, 預設 1萬/index=40) -->
+ <div class="control-group">
+ <div class="control-label">
+ <span>首年每月儲蓄額</span>
+ <span class="value-display" id="val_monthly">$10,000</span>
+ </div>
+ <input type="range" id="param_monthly_step" min="0" max="102" step="1" value="40">
+ </div>
 
-      <div class="control-group">
-        <div class="control-label">
-          <span>每月儲蓄額每年增長率 (%)</span>
-          <span class="value-display" id="val_savings_growth">3.00%</span>
-        </div>
-        <input type="range" id="param_savings_growth" min="0.00" max="10.00" step="0.25" value="3.00">
-        <div class="sub-hint">💡 說明：模擬每年因加薪或儲蓄能力提升而增加每月定期儲蓄額。</div>
-      </div>
+ <div class="control-group">
+ <div class="control-label">
+ <span>每月儲蓄額每年增長率 (%)</span>
+ <span class="value-display" id="val_savings_growth">3.00%</span>
+ </div>
+ <input type="range" id="param_savings_growth" min="0.00" max="10.00" step="0.25" value="3.00">
+ <div class="sub-hint">💡 說明：模擬每年因加薪或儲蓄能力提升而增加每月定期儲蓄額。</div>
+ </div>
 
-      <div class="control-group">
-        <div class="control-label">
-          <span>股票配置比例 (%)</span>
-          <span class="value-display" id="val_stock_pct">80%</span>
-        </div>
-        <input type="range" id="param_stock_pct" min="0" max="100" step="5" value="80">
-      </div>
+ <div class="control-group">
+ <div class="control-label">
+ <span>股票配置比例 (%)</span>
+ <span class="value-display" id="val_stock_pct">80%</span>
+ </div>
+ <input type="range" id="param_stock_pct" min="0" max="100" step="5" value="80">
+ </div>
 
-      <div class="control-group">
-        <div class="control-label">
-          <span>股票年化收益率 (%)</span>
-          <span class="value-display" id="val_stock_ret">7.00%</span>
-        </div>
-        <input type="range" id="param_stock_ret" min="0.00" max="12.00" step="0.25" value="7.00">
-      </div>
+ <div class="control-group">
+ <div class="control-label">
+ <span>股票年化收益率 (%)</span>
+ <span class="value-display" id="val_stock_ret">7.00%</span>
+ </div>
+ <input type="range" id="param_stock_ret" min="0.00" max="12.00" step="0.25" value="7.00">
+ </div>
 
-      <div class="control-group">
-        <div class="control-label">
-          <span>債券年化收益率 (%)</span>
-          <span class="value-display" id="val_bond_ret">4.00%</span>
-        </div>
-        <input type="range" id="param_bond_ret" min="0.00" max="8.00" step="0.25" value="4.00">
-      </div>
+ <div class="control-group">
+ <div class="control-label">
+ <span>債券年化收益率 (%)</span>
+ <span class="value-display" id="val_bond_ret">4.00%</span>
+ </div>
+ <input type="range" id="param_bond_ret" min="0.00" max="8.00" step="0.25" value="4.00">
+ </div>
 
-      <div class="control-group">
-        <div class="control-label">
-          <span>預期年通脹率+購買力額外折損 (%)</span>
-          <span class="value-display" id="val_total_inflation">2.50%</span>
-        </div>
-        <input type="range" id="param_total_inflation" min="0.00" max="10.00" step="0.25" value="2.50">
-      </div>
+ <div class="control-group">
+ <div class="control-label">
+ <span>預期年通脹率+購買力額外折損 (%)</span>
+ <span class="value-display" id="val_total_inflation">2.50%</span>
+ </div>
+ <input type="range" id="param_total_inflation" min="0.00" max="10.00" step="0.25" value="2.50">
+ </div>
 
-      <div class="control-group">
-        <div class="control-label">
-          <span>預計積累年期 (年)</span>
-          <span class="value-display" id="val_years">25 年</span>
-        </div>
-        <input type="range" id="param_years" min="5" max="50" step="1" value="25">
-      </div>
-    </div>
-  </div>
+ <div class="control-group">
+ <div class="control-label">
+ <span>預計積累年期 (年)</span>
+ <span class="value-display" id="val_years">25 年</span>
+ </div>
+ <input type="range" id="param_years" min="5" max="50" step="1" value="25">
+ </div>
+ </div>
+ </div>
 
-  <!-- 2. 成果摘要 (強制左名目、右實質購買力平行對照) -->
-  <div class="summary-card">
-    <div class="summary-title">積累成果摘要</div>
-    <div class="summary-grid">
-      <!-- 置頂滿寬：累積投入總本金 -->
-      <div class="summary-item summary-item-full">
-        <div class="summary-item-label">累積投入總本金 (名目)</div>
-        <div class="summary-item-value" id="sum_total_principal">$0</div>
-      </div>
+ <!-- 2. 成果摘要 -->
+ <div class="summary-card">
+ <div class="summary-title">積累成果摘要</div>
+ <div class="summary-grid">
+ <div class="summary-item summary-item-full">
+ <div class="summary-item-label">累積投入總本金 (名目)</div>
+ <div class="summary-item-value" id="sum_total_principal">$0</div>
+ </div>
 
-      <!-- 左欄：第 X 年名義總資產 -->
-      <div class="summary-item">
-        <div class="summary-item-label" id="lbl_final_nominal">第 25 年名義總資產 (名目)</div>
-        <div class="summary-item-value" id="sum_final_nominal" style="color: var(--chart-custom-nominal);">$0</div>
-      </div>
+ <div class="summary-item">
+ <div class="summary-item-label" id="lbl_final_nominal">第 25 年名義總資產 (名目)</div>
+ <div class="summary-item-value" id="sum_final_nominal" style="color: var(--chart-custom-nominal);">$0</div>
+ </div>
 
-      <!-- 右欄：第 X 年實質購買力 -->
-      <div class="summary-item">
-        <div class="summary-item-label" id="lbl_final_real">第 25 年實質購買力 (今日實質購買力)</div>
-        <div class="summary-item-value" id="sum_final_real" style="color: var(--status-ok);">$0</div>
-      </div>
+ <div class="summary-item">
+ <div class="summary-item-label" id="lbl_final_real">第 25 年實質購買力 (今日實質購買力)</div>
+ <div class="summary-item-value" id="sum_final_real" style="color: var(--status-ok);">$0</div>
+ </div>
 
-      <!-- 左欄：投資複利滾存收益 (名目) -->
-      <div class="summary-item">
-        <div class="summary-item-label">投資複利滾存收益 (名目)</div>
-        <div class="summary-item-value" id="sum_investment_gain_nominal" style="color: var(--chart-custom-nominal);">$0</div>
-      </div>
+ <div class="summary-item">
+ <div class="summary-item-label">投資複利滾存收益 (名目)</div>
+ <div class="summary-item-value" id="sum_investment_gain_nominal" style="color: var(--chart-custom-nominal);">$0</div>
+ </div>
 
-      <!-- 右欄：投資複利滾存收益 (實質購買力) -->
-      <div class="summary-item">
-        <div class="summary-item-label">投資複利滾存收益 (實質購買力)</div>
-        <div class="summary-item-value" id="sum_investment_gain_real" style="color: var(--status-ok);">$0</div>
-      </div>
-    </div>
-  </div>
+ <div class="summary-item">
+ <div class="summary-item-label">投資複利滾存收益 (實質購買力)</div>
+ <div class="summary-item-value" id="sum_investment_gain_real" style="color: var(--status-ok);">$0</div>
+ </div>
+ </div>
+ </div>
 
-  <!-- 3. 圖表部分 -->
-  <div class="chart-card">
-    <h2 class="chart-card-title">圖表 1：資產積累總額走勢 (名目總資產 vs 投入本金 vs 實質購買力)</h2>
-    <div class="chart-container">
-      <canvas id="assetChart"></canvas>
-    </div>
-  </div>
+ <!-- 3. 圖表部分 -->
+ <div class="chart-card">
+ <h2 class="chart-card-title">圖表 1：資產積累總額走勢 (名目總資產 vs 投入本金 vs 實質購買力)</h2>
+ <div class="chart-container">
+ <canvas id="assetChart"></canvas>
+ </div>
+ </div>
 
-  <div class="chart-card">
-    <h2 class="chart-card-title">圖表 2：每月儲蓄金額演變 (名目儲蓄額 vs 實質購買力)</h2>
-    <div class="chart-container">
-      <canvas id="savingsChart"></canvas>
-    </div>
-  </div>
+ <div class="chart-card">
+ <h2 class="chart-card-title">圖表 2：每月儲蓄金額演變 (名目儲蓄額 vs 實質購買力)</h2>
+ <div class="chart-container">
+ <canvas id="savingsChart"></canvas>
+ </div>
+ </div>
 
-  <div class="chart-card">
-    <h2 class="chart-card-title">圖表 3：投資組合年化名目回報率與對照組比較</h2>
-    <div class="chart-container">
-      <canvas id="returnChart"></canvas>
-    </div>
-  </div>
+ <div class="chart-card">
+ <h2 class="chart-card-title">圖表 3：投資組合年化名目回報率與對照組比較</h2>
+ <div class="chart-container">
+ <canvas id="returnChart"></canvas>
+ </div>
+ </div>
 
-  <div class="footer-note">
-    *對照組採用固定 50% 股票 (7% 回報) + 50% 債券 (4% 回報) 配置，加權年化名目回報率為 5.5%。<br>
-    *「實質購買力」已根據設定之年通脹率與額外折損進行折現，反映該筆資產在「今天」的實際消費價值。<br>
-    *本模擬器假設每月儲蓄金額於年中均勻注入，投資組合於每年年底進行再平衡 (Rebalancing)。
-  </div>
+ <div class="footer-note">
+ *對照組採用固定 50% 股票 (7% 回報) + 50% 債券 (4% 回報) 配置，加權年化名目回報率為 5.5%。<br>
+ *「實質購買力」已根據設定之年通脹率與額外折損進行折現，反映該筆資產在「今天」的實際消費價值。<br>
+ *本模擬器假設每月儲蓄金額於年中均勻注入，投資組合於每年年底進行再平衡 (Rebalancing)。
+ </div>
 
-  <footer class="app-footer">
-    <p>Created by <strong>Anthony c t LEE</strong>, Sep 2026.</p>
-    <p class="disclaimer">Disclaimer: This simulator is for educational and informational purposes only and does not constitute financial advice.</p>
-  </footer>
+ <footer class="app-footer">
+ <p>Created by <strong>Anthony c t LEE</strong>, Sep 2026.</p>
+ <p class="disclaimer">Disclaimer: This simulator is for educational and informational purposes only and does not constitute financial advice.</p>
+ </footer>
 
 </div>
 
 <script>
-  window.addEventListener('DOMContentLoaded', () => {
-    const formatCurrency = (val) => '$' + Number(val).toLocaleString('en-US');
-    const formatPercent = (val) => Number(val).toFixed(2) + '%';
-    const formatYears = (val) => val + ' 年';
+ window.addEventListener('DOMContentLoaded', () => {
+ const formatCurrency = (val) => '$' + Number(val).toLocaleString('en-US');
+ const formatPercent = (val) => Number(val).toFixed(2) + '%';
+ const formatYears = (val) => val + ' 年';
 
-    function getVal(id, fallback) {
-      const el = document.getElementById(id);
-      return el ? parseFloat(el.value) : fallback;
-    }
+ // -------------------------------------------------------------
+ // 分級梯級 (Segmented Step) 映射函式 (每步數值減半)
+ // -------------------------------------------------------------
+ // 1. 初始本金: 0 ~ 1,000萬 (113 個刻度 0..112)
+ function getInitialAmountFromStep(step) {
+  step = Number(step);
+  if (step === 0) return 0;
+  if (step <= 40) {
+    // 0 ~ 10萬: 每步 2,500 (1~40)
+    return step * 2500;
+  } else if (step <= 76) {
+    // 10萬 ~ 100萬: 每步 25,000 (41~76)
+    return 100000 + (step - 40) * 25000;
+  } else {
+    // 100萬 ~ 1,000萬: 每步 250,000 (77~112)
+    return 1000000 + (step - 76) * 250000;
+  }
+ }
 
-    function setTxt(id, txt) {
-      const el = document.getElementById(id);
-      if (el) el.textContent = txt;
-    }
+ // 2. 每月儲蓄額: 0 ~ 20萬 (103 個刻度 0..102)
+ function getMonthlyAmountFromStep(step) {
+  step = Number(step);
+  if (step === 0) return 0;
+  if (step <= 40) {
+    // 0 ~ 1萬: 每步 250 (1~40)
+    return step * 250;
+  } else if (step <= 72) {
+    // 1萬 ~ 5萬: 每步 1,250 (41~72)
+    return 10000 + (step - 40) * 1250;
+  } else {
+    // 5萬 ~ 20萬: 每步 5,000 (73~102)
+    return 50000 + (step - 72) * 5000;
+  }
+ }
 
-    function getParams() {
-      return {
-        initial: getVal('param_initial', 200000),
-        monthly: getVal('param_monthly', 10000),
-        savings_growth: getVal('param_savings_growth', 3.0) / 100,
-        stock_pct: getVal('param_stock_pct', 80) / 100,
-        stock_ret: getVal('param_stock_ret', 7.0) / 100,
-        bond_ret: getVal('param_bond_ret', 4.0) / 100,
-        total_inflation: getVal('param_total_inflation', 2.5) / 100,
-        years: parseInt(getVal('param_years', 25), 10)
-      };
-    }
+ function getVal(id, fallback) {
+ const el = document.getElementById(id);
+ return el ? parseFloat(el.value) : fallback;
+ }
 
-    function calculateData(params) {
-      const { initial, monthly, savings_growth, stock_pct, stock_ret, bond_ret, total_inflation, years } = params;
+ function setTxt(id, txt) {
+ const el = document.getElementById(id);
+ if (el) el.textContent = txt;
+ }
 
-      const labels = [];
-      const customAssetData = [];
-      const totalPrincipalData = [];
-      const realAssetData = [];
-      const benchmarkAssetData = [];
-      const monthlySavingsNominalData = [];
-      const monthlySavingsRealData = [];
+ function getParams() {
+ const initialStep = getVal('param_initial_step', 44);
+ const monthlyStep = getVal('param_monthly_step', 40);
 
-      const portfolioRet = stock_pct * stock_ret + (1 - stock_pct) * bond_ret;
-      const benchmarkRet = 0.5 * 0.07 + 0.5 * 0.04;
+ return {
+ initial: getInitialAmountFromStep(initialStep),
+ monthly: getMonthlyAmountFromStep(monthlyStep),
+ savings_growth: getVal('param_savings_growth', 3.0) / 100,
+ stock_pct: getVal('param_stock_pct', 80) / 100,
+ stock_ret: getVal('param_stock_ret', 7.0) / 100,
+ bond_ret: getVal('param_bond_ret', 4.0) / 100,
+ total_inflation: getVal('param_total_inflation', 2.5) / 100,
+ years: parseInt(getVal('param_years', 25), 10)
+ };
+ }
 
-      let currentBalCustom = initial;
-      let currentBalBench = initial;
-      let cumPrincipal = initial;
+ function calculateData(params) {
+ const { initial, monthly, savings_growth, stock_pct, stock_ret, bond_ret, total_inflation, years } = params;
 
-      for (let t = 0; t <= years; t++) {
-        labels.push(t + ' 年');
+ const labels = [];
+ const customAssetData = [];
+ const totalPrincipalData = [];
+ const realAssetData = [];
+ const benchmarkAssetData = [];
+ const monthlySavingsNominalData = [];
+ const monthlySavingsRealData = [];
 
-        const currentMonthlySavingsNominal = monthly * Math.pow(1 + savings_growth, t);
-        const annualSavingsNominal = currentMonthlySavingsNominal * 12;
+ const portfolioRet = stock_pct * stock_ret + (1 - stock_pct) * bond_ret;
+ const benchmarkRet = 0.5 * 0.07 + 0.5 * 0.04;
 
-        const discountFactor = Math.pow(1 + total_inflation, t);
-        const currentMonthlySavingsReal = currentMonthlySavingsNominal / discountFactor;
+ let currentBalCustom = initial;
+ let currentBalBench = initial;
+ let cumPrincipal = initial;
 
-        monthlySavingsNominalData.push(Math.round(currentMonthlySavingsNominal));
-        monthlySavingsRealData.push(Math.round(currentMonthlySavingsReal));
+ for (let t = 0; t <= years; t++) {
+ labels.push(t + ' 年');
 
-        customAssetData.push(Math.round(currentBalCustom));
-        totalPrincipalData.push(Math.round(cumPrincipal));
-        realAssetData.push(Math.round(currentBalCustom / discountFactor));
-        benchmarkAssetData.push(Math.round(currentBalBench));
+ const currentMonthlySavingsNominal = monthly * Math.pow(1 + savings_growth, t);
+ const annualSavingsNominal = currentMonthlySavingsNominal * 12;
 
-        if (t < years) {
-          cumPrincipal += annualSavingsNominal;
-          currentBalCustom = (currentBalCustom + annualSavingsNominal) * (1 + portfolioRet);
-          currentBalBench = (currentBalBench + annualSavingsNominal) * (1 + benchmarkRet);
-        }
-      }
+ const discountFactor = Math.pow(1 + total_inflation, t);
+ const currentMonthlySavingsReal = currentMonthlySavingsNominal / discountFactor;
 
-      return {
-        labels,
-        customAssetData,
-        totalPrincipalData,
-        realAssetData,
-        benchmarkAssetData,
-        monthlySavingsNominalData,
-        monthlySavingsRealData,
-        portfolioRet,
-        benchmarkRet
-      };
-    }
+ monthlySavingsNominalData.push(Math.round(currentMonthlySavingsNominal));
+ monthlySavingsRealData.push(Math.round(currentMonthlySavingsReal));
 
-    if (typeof Chart !== 'undefined') {
-      Chart.defaults.color = '#a0a0a0';
-      Chart.defaults.borderColor = '#2a2a2a';
-    }
+ customAssetData.push(Math.round(currentBalCustom));
+ totalPrincipalData.push(Math.round(cumPrincipal));
+ realAssetData.push(Math.round(currentBalCustom / discountFactor));
+ benchmarkAssetData.push(Math.round(currentBalBench));
 
-    let assetChart, savingsChart, returnChart;
+ if (t < years) {
+ cumPrincipal += annualSavingsNominal;
+ currentBalCustom = (currentBalCustom + annualSavingsNominal) * (1 + portfolioRet);
+ currentBalBench = (currentBalBench + annualSavingsNominal) * (1 + benchmarkRet);
+ }
+ }
 
-    try {
-      // 圖表 1
-      const ctxAsset = document.getElementById('assetChart').getContext('2d');
-      assetChart = new Chart(ctxAsset, {
-        type: 'line',
-        data: {
-          labels: [],
-          datasets: [
-            { label: '自訂組合名目資產', data: [], borderColor: '#64b5f6', backgroundColor: 'rgba(100, 181, 246, 0.15)', fill: true, tension: 0.1 },
-            { label: '累積投入總本金', data: [], borderColor: '#ffb74d', borderDash: [3, 3], fill: false, tension: 0.1 },
-            { label: '實質購買力 (折現後)', data: [], borderColor: '#81c784', borderDash: [5, 5], fill: false, tension: 0.1 },
-            { label: '對照組名目資產 (50/50)', data: [], borderColor: '#ba68c8', fill: false, tension: 0.1 }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: { title: { display: true, text: '儲蓄與投資年數' } },
-            y: { title: { display: true, text: '資產總額 ($)' }, ticks: { callback: (v) => '$' + (v / 10000).toLocaleString() + '萬' } }
-          }
-        }
-      });
+ return {
+ labels,
+ customAssetData,
+ totalPrincipalData,
+ realAssetData,
+ benchmarkAssetData,
+ monthlySavingsNominalData,
+ monthlySavingsRealData,
+ portfolioRet,
+ benchmarkRet
+ };
+ }
 
-      // 圖表 2
-      const ctxSavings = document.getElementById('savingsChart').getContext('2d');
-      savingsChart = new Chart(ctxSavings, {
-        type: 'line',
-        data: {
-          labels: [],
-          datasets: [
-            {
-              label: '名目每月儲蓄額 ($)',
-              data: [],
-              borderColor: '#64b5f6',
-              backgroundColor: 'rgba(100, 181, 246, 0.15)',
-              fill: true,
-              tension: 0.1,
-              yAxisID: 'y'
-            },
-            {
-              label: '實質每月儲蓄購買力 ($)',
-              data: [],
-              borderColor: '#81c784',
-              borderDash: [5, 5],
-              fill: false,
-              tension: 0.1,
-              yAxisID: 'y1'
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: { title: { display: true, text: '儲蓄與投資年數' } },
-            y: {
-              type: 'linear',
-              display: true,
-              position: 'left',
-              title: { display: true, text: '名目金額 ($)', color: '#64b5f6' },
-              ticks: { color: '#64b5f6', callback: (v) => '$' + Number(v).toLocaleString() }
-            },
-            y1: {
-              type: 'linear',
-              display: true,
-              position: 'right',
-              title: { display: true, text: '實質購買力 ($)', color: '#81c784' },
-              ticks: { color: '#81c784', callback: (v) => '$' + Number(v).toLocaleString() },
-              grid: { drawOnChartArea: false }
-            }
-          }
-        }
-      });
+ if (typeof Chart !== 'undefined') {
+ Chart.defaults.color = '#a0a0a0';
+ Chart.defaults.borderColor = '#2a2a2a';
+ }
 
-      // 圖表 3
-      const ctxReturn = document.getElementById('returnChart').getContext('2d');
-      returnChart = new Chart(ctxReturn, {
-        type: 'bar',
-        data: {
-          labels: ['自訂投資組合', '對照組 (50/50 股債)'],
-          datasets: [{
-            label: '年化名目回報率 (%)',
-            data: [0, 0],
-            backgroundColor: ['rgba(100, 181, 246, 0.7)', 'rgba(255, 183, 77, 0.7)'],
-            borderColor: ['#64b5f6', '#ffb74d'],
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              title: { display: true, text: '年化回報率 (%)' },
-              min: 0,
-              max: 12,
-              ticks: { callback: (v) => Number(v).toFixed(1) + '%' }
-            }
-          }
-        }
-      });
-    } catch (err) {
-      console.error("初始化圖表失敗: ", err);
-    }
+ let assetChart, savingsChart, returnChart;
 
-    function updateAll() {
-      const p = getParams();
+ try {
+ // 圖表 1
+ const ctxAsset = document.getElementById('assetChart').getContext('2d');
+ assetChart = new Chart(ctxAsset, {
+ type: 'line',
+ data: {
+ labels: [],
+ datasets: [
+ { label: '自訂組合名目資產', data: [], borderColor: '#64b5f6', backgroundColor: 'rgba(100, 181, 246, 0.15)', fill: true, tension: 0.1 },
+ { label: '累積投入總本金', data: [], borderColor: '#ffb74d', borderDash: [3, 3], fill: false, tension: 0.1 },
+ { label: '實質購買力 (折現後)', data: [], borderColor: '#81c784', borderDash: [5, 5], fill: false, tension: 0.1 },
+ { label: '對照組名目資產 (50/50)', data: [], borderColor: '#ba68c8', fill: false, tension: 0.1 }
+ ]
+ },
+ options: {
+ responsive: true,
+ maintainAspectRatio: false,
+ scales: {
+ x: { title: { display: true, text: '儲蓄與投資年數' } },
+ y: { title: { display: true, text: '資產總額 ($)' }, ticks: { callback: (v) => '$' + (v / 10000).toLocaleString() + '萬' } }
+ }
+ }
+ });
 
-      setTxt('val_initial', formatCurrency(getVal('param_initial', 200000)));
-      setTxt('val_monthly', formatCurrency(getVal('param_monthly', 10000)));
-      setTxt('val_savings_growth', formatPercent(getVal('param_savings_growth', 3.0)));
-      setTxt('val_stock_pct', getVal('param_stock_pct', 80) + '%');
-      setTxt('val_stock_ret', formatPercent(getVal('param_stock_ret', 7.0)));
-      setTxt('val_bond_ret', formatPercent(getVal('param_bond_ret', 4.0)));
-      setTxt('val_total_inflation', formatPercent(getVal('param_total_inflation', 2.5)));
-      setTxt('val_years', formatYears(getVal('param_years', 25)));
+ // 圖表 2
+ const ctxSavings = document.getElementById('savingsChart').getContext('2d');
+ savingsChart = new Chart(ctxSavings, {
+ type: 'line',
+ data: {
+ labels: [],
+ datasets: [
+ {
+ label: '名目每月儲蓄額 ($)',
+ data: [],
+ borderColor: '#64b5f6',
+ backgroundColor: 'rgba(100, 181, 246, 0.15)',
+ fill: true,
+ tension: 0.1,
+ yAxisID: 'y'
+ },
+ {
+ label: '實質每月儲蓄購買力 ($)',
+ data: [],
+ borderColor: '#81c784',
+ borderDash: [5, 5],
+ fill: false,
+ tension: 0.1,
+ yAxisID: 'y1'
+ }
+ ]
+ },
+ options: {
+ responsive: true,
+ maintainAspectRatio: false,
+ scales: {
+ x: { title: { display: true, text: '儲蓄與投資年數' } },
+ y: {
+ type: 'linear',
+ display: true,
+ position: 'left',
+ title: { display: true, text: '名目金額 ($)', color: '#64b5f6' },
+ ticks: { color: '#64b5f6', callback: (v) => '$' + Number(v).toLocaleString() }
+ },
+ y1: {
+ type: 'linear',
+ display: true,
+ position: 'right',
+ title: { display: true, text: '實質購買力 ($)', color: '#81c784' },
+ ticks: { color: '#81c784', callback: (v) => '$' + Number(v).toLocaleString() },
+ grid: { drawOnChartArea: false }
+ }
+ }
+ }
+ });
 
-      const res = calculateData(p);
+ // 圖表 3
+ const ctxReturn = document.getElementById('returnChart').getContext('2d');
+ returnChart = new Chart(ctxReturn, {
+ type: 'bar',
+ data: {
+ labels: ['自訂投資組合', '對照組 (50/50 股債)'],
+ datasets: [{
+ label: '年化名目回報率 (%)',
+ data: [0, 0],
+ backgroundColor: ['rgba(100, 181, 246, 0.7)', 'rgba(255, 183, 77, 0.7)'],
+ borderColor: ['#64b5f6', '#ffb74d'],
+ borderWidth: 1
+ }]
+ },
+ options: {
+ responsive: true,
+ maintainAspectRatio: false,
+ scales: {
+ y: {
+ title: { display: true, text: '年化回報率 (%)' },
+ min: 0,
+ max: 12,
+ ticks: { callback: (v) => Number(v).toFixed(1) + '%' }
+ }
+ }
+ }
+ });
+ } catch (err) {
+ console.error("初始化圖表失敗: ", err);
+ }
 
-      setTxt('lbl_final_nominal', `第 ${p.years} 年名義總資產 (名目)`);
-      setTxt('lbl_final_real', `第 ${p.years} 年實質購買力 (今日實質購買力)`);
+ function updateAll() {
+ const p = getParams();
 
-      const finalPrincipal = res.totalPrincipalData[res.totalPrincipalData.length - 1];
-      const finalNominal = res.customAssetData[res.customAssetData.length - 1];
-      const finalReal = res.realAssetData[res.realAssetData.length - 1];
+ setTxt('val_initial', formatCurrency(p.initial));
+ setTxt('val_monthly', formatCurrency(p.monthly));
+ setTxt('val_savings_growth', formatPercent(getVal('param_savings_growth', 3.0)));
+ setTxt('val_stock_pct', getVal('param_stock_pct', 80) + '%');
+ setTxt('val_stock_ret', formatPercent(getVal('param_stock_ret', 7.0)));
+ setTxt('val_bond_ret', formatPercent(getVal('param_bond_ret', 4.0)));
+ setTxt('val_total_inflation', formatPercent(getVal('param_total_inflation', 2.5)));
+ setTxt('val_years', formatYears(getVal('param_years', 25)));
 
-      const investmentGainNominal = finalNominal - finalPrincipal;
-      const investmentGainReal = finalReal - finalPrincipal;
+ const res = calculateData(p);
 
-      setTxt('sum_total_principal', formatCurrency(finalPrincipal));
-      setTxt('sum_final_nominal', formatCurrency(finalNominal));
-      setTxt('sum_final_real', formatCurrency(finalReal));
-      setTxt('sum_investment_gain_nominal', formatCurrency(investmentGainNominal));
-      setTxt('sum_investment_gain_real', formatCurrency(investmentGainReal));
+ setTxt('lbl_final_nominal', `第 ${p.years} 年名義總資產 (名目)`);
+ setTxt('lbl_final_real', `第 ${p.years} 年實質購買力 (今日實質購買力)`);
 
-      if (assetChart) {
-        assetChart.data.labels = res.labels;
-        assetChart.data.datasets[0].data = res.customAssetData;
-        assetChart.data.datasets[1].data = res.totalPrincipalData;
-        assetChart.data.datasets[2].data = res.realAssetData;
-        assetChart.data.datasets[3].data = res.benchmarkAssetData;
-        assetChart.update();
-      }
+ const finalPrincipal = res.totalPrincipalData[res.totalPrincipalData.length - 1];
+ const finalNominal = res.customAssetData[res.customAssetData.length - 1];
+ const finalReal = res.realAssetData[res.realAssetData.length - 1];
 
-      if (savingsChart) {
-        savingsChart.data.labels = res.labels;
-        savingsChart.data.datasets[0].data = res.monthlySavingsNominalData;
-        savingsChart.data.datasets[1].data = res.monthlySavingsRealData;
-        savingsChart.update();
-      }
+ const investmentGainNominal = finalNominal - finalPrincipal;
+ const investmentGainReal = finalReal - finalPrincipal;
 
-      if (returnChart) {
-        returnChart.data.datasets[0].data = [(res.portfolioRet * 100).toFixed(2), (res.benchmarkRet * 100).toFixed(2)];
-        returnChart.update();
-      }
-    }
+ setTxt('sum_total_principal', formatCurrency(finalPrincipal));
+ setTxt('sum_final_nominal', formatCurrency(finalNominal));
+ setTxt('sum_final_real', formatCurrency(finalReal));
+ setTxt('sum_investment_gain_nominal', formatCurrency(investmentGainNominal));
+ setTxt('sum_investment_gain_real', formatCurrency(investmentGainReal));
 
-    const inputs = document.querySelectorAll('input[type="range"]');
-    inputs.forEach(input => {
-      input.addEventListener('input', updateAll);
-      input.addEventListener('change', updateAll);
-    });
+ if (assetChart) {
+ assetChart.data.labels = res.labels;
+ assetChart.data.datasets[0].data = res.customAssetData;
+ assetChart.data.datasets[1].data = res.totalPrincipalData;
+ assetChart.data.datasets[2].data = res.realAssetData;
+ assetChart.data.datasets[3].data = res.benchmarkAssetData;
+ assetChart.update();
+ }
 
-    updateAll();
-  });
+ if (savingsChart) {
+ savingsChart.data.labels = res.labels;
+ savingsChart.data.datasets[0].data = res.monthlySavingsNominalData;
+ savingsChart.data.datasets[1].data = res.monthlySavingsRealData;
+ savingsChart.update();
+ }
+
+ if (returnChart) {
+ returnChart.data.datasets[0].data = [(res.portfolioRet * 100).toFixed(2), (res.benchmarkRet * 100).toFixed(2)];
+ returnChart.update();
+ }
+ }
+
+ const inputs = document.querySelectorAll('input[type="range"]');
+ inputs.forEach(input => {
+ input.addEventListener('input', updateAll);
+ input.addEventListener('change', updateAll);
+ });
+
+ updateAll();
+ });
 </script>
 
 </body>
