@@ -291,18 +291,18 @@
  <div class="control-group">
  <div class="control-label">
  <span>最初資產</span>
- <span class="value-display" id="val_initial">$6,000,000</span>
+ <span class="value-display" id="val_initial">$3,000,000</span>
  </div>
- <input type="range" id="param_initial" min="2000000" max="20000000" step="500000" value="6000000">
+ <input type="range" id="param_initial_step" min="0" max="80" step="1" value="40">
  </div>
 
  <!-- 首年每月提領額 -->
  <div class="control-group">
  <div class="control-label">
  <span>首年每月提領額</span>
- <span class="value-display" id="val_monthly">$20,000</span>
+ <span class="value-display" id="val_monthly">$10,000</span>
  </div>
- <input type="range" id="param_monthly" min="5000" max="100000" step="1000" value="20000">
+ <input type="range" id="param_monthly_step" min="0" max="68" step="1" value="20">
  </div>
 
  <!-- 提領額跟隨率 -->
@@ -323,7 +323,7 @@
  <span>其他每月總入息 (租金/兼職等)</span>
  <span class="value-display" id="val_other_income">$0</span>
  </div>
- <input type="range" id="param_other_income" min="0" max="100000" step="1000" value="0">
+ <input type="range" id="param_other_income_step" min="0" max="68" step="1" value="0">
  <div class="sub-hint">💡 說明：此入息亦會隨綜合通脹與跟隨率調整，並用作抵銷每月提領開支。</div>
  </div>
 
@@ -441,6 +441,45 @@
  const formatPercent = (val) => Number(val).toFixed(2) + '%';
  const formatYears = (val) => val + ' 年';
 
+ // 轉換函數：最初資產 (0 ~ 1,000 萬)
+ function getInitialAssetFromStep(step) {
+ step = Number(step);
+ if (step === 0) return 0;
+ if (step <= 20) {
+ return step * 50000; // 0 ~ 100萬 (每步 5萬，20步)
+ } else if (step <= 60) {
+ return 1000000 + (step - 20) * 100000; // 100萬 ~ 500萬 (每步 10萬，40步)
+ } else {
+ return 5000000 + (step - 60) * 250000; // 500萬 ~ 1,000萬 (每步 25萬，20步)
+ }
+ }
+
+ // 轉換函數：首年每月提領額 (0 ~ 10 萬)
+ function getMonthlyWithdrawalFromStep(step) {
+ step = Number(step);
+ if (step === 0) return 0;
+ if (step <= 20) {
+ return step * 500; // 0 ~ 1萬 (每步 500，20步)
+ } else if (step <= 40) {
+ return 10000 + (step - 20) * 1000; // 1萬 ~ 3萬 (每步 1,000，20步)
+ } else {
+ return 30000 + (step - 40) * 2500; // 3萬 ~ 10萬 (每步 2,500，28步)
+ }
+ }
+
+ // 轉換函數：其他每月總入息 (0 ~ 10 萬)
+ function getOtherIncomeFromStep(step) {
+ step = Number(step);
+ if (step === 0) return 0;
+ if (step <= 20) {
+ return step * 500; // 0 ~ 1萬 (每步 500，20步)
+ } else if (step <= 40) {
+ return 10000 + (step - 20) * 1000; // 1萬 ~ 3萬 (每步 1,000，20步)
+ } else {
+ return 30000 + (step - 40) * 2500; // 3萬 ~ 10萬 (每步 2,500，28步)
+ }
+ }
+
  function getVal(id, fallback) {
  const el = document.getElementById(id);
  return el ? parseFloat(el.value) : fallback;
@@ -453,9 +492,9 @@
 
  function getParams() {
  return {
- initial: getVal('param_initial', 6000000),
- monthly: getVal('param_monthly', 20000),
- other_income: getVal('param_other_income', 0),
+ initial: getInitialAssetFromStep(getVal('param_initial_step', 40)),
+ monthly: getMonthlyWithdrawalFromStep(getVal('param_monthly_step', 20)),
+ other_income: getOtherIncomeFromStep(getVal('param_other_income_step', 0)),
  inflation_adj_pct: getVal('param_inflation_adj_pct', 80) / 100,
  stock_pct: getVal('param_stock_pct', 70) / 100,
  stock_ret: getVal('param_stock_ret', 6) / 100,
@@ -636,9 +675,9 @@ min: 0,
  function updateAll() {
  const p = getParams();
 
- setTxt('val_initial', formatCurrency(getVal('param_initial', 6000000)));
- setTxt('val_monthly', formatCurrency(getVal('param_monthly', 20000)));
- setTxt('val_other_income', formatCurrency(getVal('param_other_income', 0)));
+ setTxt('val_initial', formatCurrency(p.initial));
+ setTxt('val_monthly', formatCurrency(p.monthly));
+ setTxt('val_other_income', formatCurrency(p.other_income));
  setTxt('val_inflation_adj_pct', getVal('param_inflation_adj_pct', 80) + '%');
  setTxt('val_stock_pct', getVal('param_stock_pct', 70) + '%');
  setTxt('val_stock_ret', formatPercent(getVal('param_stock_ret', 6)));
