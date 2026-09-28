@@ -3,16 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2026年度香港年金 + 長生津與實質購買力模擬器 v0.31</title>
+  <title>2026年度香港年金 + 長生津與實質購買力模擬器 v0.32</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    /* 預設為夜間模式變數 */
+    /* 預設：暗黑模式變數 (Dark Mode) */
     :root {
       --bg-color: #121212;
       --card-bg: #1e1e1e;
+      --inner-card-bg: #252525;
       --card-border: #2c2c2c;
+      --border-color: #333333;
       --text-main: #e0e0e0;
       --text-sub: #a0a0a0;
+      --text-muted: #a0a0a0;
+      --title-color: #ffffff;
+      
       --accent-blue: #3b82f6;
       --accent-green: #22c55e;
       --accent-yellow: #eab308;
@@ -20,20 +25,26 @@
       --accent-purple: #a855f7;
       --accent-orange: #f97316;
       --accent-pink: #ec4899;
+
       --select-bg: #2a2a2a;
       --summary-card-bg: #252525;
       --th-bg: #252525;
       --grid-color: #2c2c2c;
     }
 
-    /* 自動切換為白天模式 */
+    /* 自動切換：當使用者系統偏好亮色模式時 (Light Mode) */
     @media (prefers-color-scheme: light) {
       :root {
         --bg-color: #f5f5f7;
         --card-bg: #ffffff;
+        --inner-card-bg: #f9f9fb;
         --card-border: #e2e2e5;
+        --border-color: #dee2e6;
         --text-main: #222222;
         --text-sub: #666666;
+        --text-muted: #6c757d;
+        --title-color: #212529;
+
         --accent-blue: #1976d2;
         --accent-green: #2e7d32;
         --accent-yellow: #f57f17;
@@ -41,6 +52,7 @@
         --accent-purple: #7b1fa2;
         --accent-orange: #e65100;
         --accent-pink: #c2185b;
+
         --select-bg: #f0f0f2;
         --summary-card-bg: #f9f9fb;
         --th-bg: #f0f0f2;
@@ -55,41 +67,62 @@
       margin: 0;
       padding: 16px;
       line-height: 1.5;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     .container {
-      max-width: 800px;
+      max-width: 900px;
       margin: 0 auto;
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      padding: 20px;
+      border: 1px solid var(--card-border);
+      transition: background-color 0.3s ease, border-color 0.3s ease;
     }
 
-    .header-link {
+    .nav-back {
+      margin-bottom: 12px;
+    }
+
+    .nav-back a {
       color: var(--accent-blue);
       text-decoration: none;
-      font-size: 14px;
-      display: inline-block;
-      margin-bottom: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
     }
 
-    h1 {
-      font-size: 22px;
-      font-weight: 700;
-      margin: 6px 0;
+    .nav-back a:hover {
+      text-decoration: underline;
+    }
+
+    .app-header {
       text-align: center;
+      margin-bottom: 24px;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 16px;
+    }
+
+    .app-title-zh {
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: var(--title-color);
+      margin: 0 0 6px 0;
       line-height: 1.3;
     }
 
-    .subtitle {
-      font-size: 13px;
+    .app-title-en {
+      font-size: 0.95rem;
+      font-weight: 600;
       color: var(--accent-blue);
-      text-align: center;
-      margin-bottom: 4px;
+      margin: 0 0 8px 0;
+      line-height: 1.3;
     }
 
-    .version {
-      font-size: 12px;
+    .app-subtitle {
+      font-size: 0.85rem;
       color: var(--text-sub);
-      text-align: center;
-      margin-bottom: 20px;
+      margin: 0;
     }
 
     .section-title {
@@ -101,6 +134,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      color: var(--title-color);
     }
 
     .reset-btn {
@@ -120,7 +154,7 @@
     }
 
     .card {
-      background-color: var(--card-bg);
+      background-color: var(--inner-card-bg);
       border: 1px solid var(--card-border);
       border-radius: 8px;
       padding: 16px;
@@ -164,6 +198,7 @@
 
     input[type="range"] {
       accent-color: var(--accent-blue);
+      cursor: pointer;
     }
 
     .checkbox-group {
@@ -204,7 +239,7 @@
     }
 
     .summary-card {
-      background-color: var(--summary-card-bg);
+      background-color: var(--card-bg);
       border: 1px solid var(--card-border);
       padding: 12px;
       border-radius: 6px;
@@ -224,7 +259,7 @@
 
     .full-width-card {
       grid-column: span 2;
-      background-color: var(--summary-card-bg);
+      background-color: var(--card-bg);
       border: 1px solid var(--card-border);
       padding: 12px;
       border-radius: 6px;
@@ -244,7 +279,7 @@
     }
 
     .analysis-card {
-      background-color: var(--summary-card-bg);
+      background-color: var(--card-bg);
       border: 1px solid var(--card-border);
       padding: 14px;
       border-radius: 6px;
@@ -312,16 +347,23 @@
       margin-top: 30px;
       font-size: 12px;
       color: var(--text-sub);
+      border-top: 1px solid var(--border-color);
+      padding-top: 16px;
     }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <a href="#" class="header-link">&larr; 返回工具箱首頁</a>
-  <h1>2026年度香港年金 + 長生津與實質購買力模擬器</h1>
-  <div class="subtitle">2026 HK Annuity & OALA Purchasing Power Simulator</div>
-  <div class="version">版本 v0.31</div>
+  <div class="nav-back">
+    <a href="index.html">← 返回工具箱首頁</a>
+  </div>
+
+  <div class="app-header">
+    <h1 class="app-title-zh">2026年度香港年金 + 長生津與實質購買力模擬器</h1>
+    <div class="app-title-en">2026 HK Annuity & OALA Purchasing Power Simulator</div>
+    <p class="app-subtitle">版本 v0.32</p>
+  </div>
 
   <!-- 輸入設定面板 -->
   <div class="section-title">
@@ -612,17 +654,17 @@
     <p>* 年齡審查規則：長生津門檻為 65 歲。若夫婦中僅一人達 65 歲，則以「單身限額」審查並發放單人津貼；當雙方均達 65 歲時，系統會自動轉換為「夫婦限額」審查並發放兩人份津貼。</p>
   </div>
 
-  <div class="footer-credits">
-    Created by Anthony c t LEE, Sep 2026.<br>
-    Disclaimer: This simulator is for educational and informational purposes only and does not constitute financial advice.
-  </div>
+  <footer class="footer-credits">
+    <p>Created by <strong>Anthony c t LEE</strong>, Sep 2026.</p>
+    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Disclaimer: This simulator is for educational and informational purposes only and does not constitute financial advice.</p>
+  </footer>
 </div>
 
 <script>
   let chart1Instance = null;
   let chart2Instance = null;
 
-  const STORAGE_KEY = 'hk_annuity_sim_config_v051';
+  const STORAGE_KEY = 'hk_annuity_sim_config_v032';
 
   const defaultValues = {
     appMode: 'couple',
