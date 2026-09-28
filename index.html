@@ -6,7 +6,7 @@
   <title>長期儲蓄、退休資產與現金流模擬器工具箱</title>
   
   <style>
-    /* 全域與主題變數定義 */
+    /* 預設：暗黑模式變數 (Dark Mode) */
     :root {
       --bg-color: #121212;
       --card-bg: #1e1e1e;
@@ -19,6 +19,25 @@
       --btn-bg: #4aa3f0;
       --btn-text: #000000;
       --btn-hover: #3b82c4;
+      --hero-title: #ffffff;
+    }
+
+    /* 自動切換：當使用者系統偏好亮色模式時 (Light Mode) */
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg-color: #f8f9fa;
+        --card-bg: #ffffff;
+        --card-border: #e0e0e0;
+        --text-main: #212529;
+        --text-sub: #6c757d;
+        --accent-blue: #0d6efd;
+        --badge-bg: #e7f1ff;
+        --badge-text: #0d6efd;
+        --btn-bg: #0d6efd;
+        --btn-text: #ffffff;
+        --btn-hover: #0b5ed7;
+        --hero-title: #212529;
+      }
     }
 
     * {
@@ -35,6 +54,7 @@
       padding: 24px 16px;
       max-width: 800px;
       margin: 0 auto;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     /* 頂部標題 Hero 區塊 */
@@ -47,7 +67,7 @@
     .hero h1 {
       font-size: 1.75rem;
       font-weight: 700;
-      color: #ffffff;
+      color: var(--hero-title);
       margin-bottom: 12px;
       line-height: 1.3;
     }
@@ -93,7 +113,8 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      transition: background-color 0.3s ease, border-color 0.3s ease;
     }
 
     .card-header {
@@ -112,7 +133,7 @@
 
     .card h2 {
       font-size: 1.2rem;
-      color: #ffffff;
+      color: var(--hero-title);
       margin-bottom: 10px;
       line-height: 1.4;
     }
@@ -149,10 +170,11 @@
       text-align: center;
       font-size: 0.85rem;
       color: var(--text-sub);
+      transition: border-color 0.3s ease;
     }
 
     footer p {
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
     footer a {
@@ -162,6 +184,11 @@
 
     footer a:hover {
       text-decoration: underline;
+    }
+
+    .visitor-counter {
+      margin-top: 20px;
+      opacity: 0.8;
     }
   </style>
 </head>
@@ -186,11 +213,17 @@
   <!-- 頁尾區塊 -->
   <footer>
     <p>Created by Anthony c t LEE, Sep 2026.</p>
+    
     <p>
       有任何意見或建議？歡迎前往 
       <a href="https://github.com/mbike-cat/retirement-simulators/issues" target="_blank" rel="noopener noreferrer">GitHub Issues 留下訊息</a>
     </p>
     <p class="disclaimer">Disclaimer: This simulator is for educational and informational purposes only and does not constitute financial advice.</p>
+    
+    <!-- 訪客計數器顯示區塊 -->
+    <div class="visitor-counter">
+      <img src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fmbike-cat.github.io%2Fretirement-simulators%2F&countColor=%234ba3e3" alt="Visitor Count">
+    </div>
   </footer>
 
   <script>
