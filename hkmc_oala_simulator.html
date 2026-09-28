@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2026年度香港年金 + 長生津與實質購買力模擬器</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-color: #121212;
+      --card-bg: #1e1e1e;
+      --card-border: #2c2c2c;
+      --text-main: #e0e0e0;
+      --text-sub: #a0a0a0;
+      --accent-blue: #3b82f6;
+      --accent-green: #22c55e;
+      --accent-yellow: #eab308;
+      --accent-red: #ef4444;
+      --accent-purple: #a855f7;
+      --accent-orange: #f97316;
+      --accent-pink: #ec4899;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+      padding: 16px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .header-link {
+      color: var(--accent-blue);
+      text-decoration: none;
+      font-size: 14px;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 6px 0;
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--accent-blue);
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    .version {
+      font-size: 12px;
+      color: var(--text-sub);
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin: 20px 0 12px 0;
+      padding-left: 8px;
+      border-left: 4px solid var(--accent-yellow);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .reset-btn {
+      background-color: transparent;
+      color: var(--accent-blue);
+      border: 1px solid var(--accent-blue);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .reset-btn:hover {
+      background-color: var(--accent-blue);
+      color: #fff;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .val-display {
+      color: var(--accent-blue);
+      font-weight: bold;
+    }
+
+    select, input[type="range"] {
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    select {
+      background-color: #2a2a2a;
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    input[type="range"] {
+      accent-color: var(--accent-blue);
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .status-banner {
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .status-banner.fail {
+      background-color: rgba(239, 68, 68, 0.15);
+      border: 1px solid var(--accent-red);
+      color: #fca5a5;
+    }
+
+    .status-banner.pass {
+      background-color: rgba(34, 197, 94, 0.15);
+      border: 1px solid var(--accent-green);
+      color: #86efac;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .summary-card {
+      background-color: #252525;
+      padding: 12px;
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    .summary-card .title {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-bottom: 4px;
+    }
+
+    .summary-card .value {
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .full-width-card {
+      grid-column: span 2;
+      background-color: #252525;
+      padding: 12px;
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    .full-width-card .title {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-bottom: 4px;
+    }
+
+    .full-width-card .value {
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--accent-yellow);
+    }
+
+    .analysis-card {
+      background-color: #252525;
+      padding: 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .analysis-card ul {
+      margin: 8px 0 0 0;
+      padding-left: 18px;
+    }
+
+    .analysis-card li {
+      margin-bottom: 6px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      margin-top: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      text-align: right;
+    }
+
+    th, td {
+      padding: 8px;
+      border-bottom: 1px solid var(--card-border);
+      white-space: nowrap;
+    }
+
+    th {
+      background-color: #252525;
+      color: var(--text-sub);
+      font-weight: normal;
+    }
+
+    th:first-child, td:first-child {
+      text-align: left;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 260px;
+      width: 100%;
+      margin-top: 12px;
+    }
+
+    .notes {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-top: 24px;
+      line-height: 1.6;
+    }
+
+    .notes p {
+      margin: 4px 0;
+    }
+
+    .footer-credits {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <a href="#" class="header-link">&larr; 返回工具箱首頁</a>
+  <h1>2026年度香港年金 + 長生津與實質購買力模擬器</h1>
+  <div class="subtitle">2026 HK Annuity & OALA Purchasing Power Simulator</div>
+  <div class="version">版本 v0.3</div>
+
+  <!-- 輸入設定面板 -->
+  <div class="section-title">
+    <span>｜ 基本參數調整與設定</span>
+    <button class="reset-btn" onclick="resetDefaults()">重置預設值</button>
+  </div>
+  <div class="card">
+    <div class="form-group">
+      <div class="label-row">
+        <span>申請人模式</span>
+      </div>
+      <select id="appMode" onchange="calculate()">
+        <option value="couple">夫婦共同申請</option>
+        <option value="single">單人獨立申請</option>
+      </select>
+    </div>
+
+    <!-- 單人獨立申請時的性別選擇 -->
+    <div class="form-group" id="singleGenderGroup" style="display: none;">
+      <div class="label-row">
+        <span>申請人身份</span>
+      </div>
+      <select id="singleGender" onchange="calculate()">
+        <option value="husband">丈夫</option>
+        <option value="wife">太太</option>
+      </select>
+    </div>
+
+    <!-- 丈夫設定區塊 -->
+    <div id="husbandSection">
+      <div class="checkbox-group" id="hBuyGroup">
+        <input type="checkbox" id="hBuyAnnuity" checked onchange="calculate()">
+        <label for="hBuyAnnuity" id="hBuyLabel">丈夫購買香港年金</label>
+      </div>
+      <div class="form-group">
+        <div class="label-row">
+          <span id="hAgeLabel">丈夫目前年齡</span>
+          <span class="val-display" id="hAgeVal">65 歲</span>
+        </div>
+        <input type="range" id="hAge" min="60" max="80" value="65" oninput="calculate()">
+      </div>
+      <div class="form-group">
+        <div class="label-row">
+          <span id="hAmtLabel">丈夫年金金額</span>
+          <span class="val-display" id="hAmtVal">$800,000</span>
+        </div>
+        <input type="range" id="hAmt" min="0" max="3000000" step="50000" value="800000" oninput="calculate()">
+      </div>
+    </div>
+
+    <!-- 妻子設定區塊 -->
+    <div id="wifeSection">
+      <div class="checkbox-group" id="wBuyGroup">
+        <input type="checkbox" id="wBuyAnnuity" checked onchange="calculate()">
+        <label for="wBuyAnnuity" id="wBuyLabel">妻子購買香港年金</label>
+      </div>
+      <div class="form-group">
+        <div class="label-row">
+          <span id="wAgeLabel">妻子目前年齡</span>
+          <span class="val-display" id="wAgeVal">63 歲</span>
+        </div>
+        <input type="range" id="wAge" min="60" max="80" value="63" oninput="calculate()">
+      </div>
+      <div class="form-group">
+        <div class="label-row">
+          <span id="wAmtLabel">妻子年金金額</span>
+          <span class="val-display" id="wAmtVal">$650,000</span>
+        </div>
+        <input type="range" id="wAmt" min="0" max="3000000" step="50000" value="650000" oninput="calculate()">
+      </div>
+    </div>
+
+    <!-- 手頭資產與提領設定 -->
+    <div class="form-group">
+      <div class="label-row">
+        <span>手頭最初資產 (現金/股債)</span>
+        <span class="val-display" id="liquidAssetsVal">$450,000</span>
+      </div>
+      <input type="range" id="liquidAssets" min="0" max="2000000" step="10000" value="450000" oninput="calculate()">
+    </div>
+
+    <div class="form-group">
+      <div class="label-row">
+        <span>手頭最初資產 (現金/股債) 首年每月提領額</span>
+        <span class="val-display" id="monthlyWithdrawalVal">$0</span>
+      </div>
+      <input type="range" id="monthlyWithdrawalRange" min="0" max="20000" step="500" value="0" oninput="calculate()">
+      <p style="font-size: 11px; color: var(--accent-yellow); margin-top: 4px;">
+        💡 說明：提領為本金提取不計入收入；當資產耗盡時提領自動歸零
+      </p>
+    </div>
+
+    <div class="form-group">
+      <div class="label-row">
+        <span>其他每月總入息 (租金/兼職等)</span>
+        <span class="val-display" id="otherIncomeVal">$0</span>
+      </div>
+      <input type="range" id="otherIncome" min="0" max="30000" step="500" value="0" oninput="calculate()">
+    </div>
+
+    <!-- 逆按揭設定 -->
+    <div style="font-weight: bold; margin: 16px 0 8px 0; font-size: 14px;">🏠 物業逆按揭 (安老按揭) 設定</div>
+    <div class="form-group">
+      <div class="label-row">
+        <span>每月發放名目金額</span>
+        <span class="val-display" id="propRevVal">$0</span>
+      </div>
+      <input type="range" id="propRev" min="0" max="30000" step="500" value="0" oninput="calculate()">
+    </div>
+    <div class="form-group">
+      <div class="label-row">
+        <span>啟動年份 (退休第幾年)</span>
+        <span class="val-display" id="propStartVal">第 10 年起</span>
+      </div>
+      <input type="range" id="propStart" min="1" max="30" value="10" oninput="calculate()">
+    </div>
+    <div class="form-group">
+      <div class="label-row">
+        <span>年期選擇 (固定或終身)</span>
+      </div>
+      <select id="propTerm" onchange="calculate()">
+        <option value="10">10年 固定年期</option>
+        <option value="15">15年 固定年期</option>
+        <option value="20">20年 固定年期</option>
+        <option value="life">終身領取</option>
+      </select>
+    </div>
+
+    <div style="font-weight: bold; margin: 16px 0 8px 0; font-size: 14px;">📄 保單逆按揭 設定</div>
+    <div class="form-group">
+      <div class="label-row">
+        <span>每月發放名目金額</span>
+        <span class="val-display" id="insRevVal">$0</span>
+      </div>
+      <input type="range" id="insRev" min="0" max="30000" step="500" value="0" oninput="calculate()">
+    </div>
+    <div class="form-group">
+      <div class="label-row">
+        <span>啟動年份 (退休第幾年)</span>
+        <span class="val-display" id="insStartVal">第 15 年起</span>
+      </div>
+      <input type="range" id="insStart" min="1" max="30" value="15" oninput="calculate()">
+    </div>
+    <div class="form-group">
+      <div class="label-row">
+        <span>年期選擇 (固定或終身)</span>
+      </div>
+      <select id="insTerm" onchange="calculate()">
+        <option value="10">10年 固定年期</option>
+        <option value="15" selected>15年 固定年期</option>
+        <option value="20">20年 固定年期</option>
+        <option value="life">終身領取</option>
+      </select>
+    </div>
+
+    <!-- 通脹與投資假設 -->
+    <div style="font-weight: bold; margin: 16px 0 8px 0; font-size: 14px;">📈 通脹與投資假設</div>
+    <div class="form-group">
+      <div class="label-row">
+        <span>預期基本年通脹率 (%)</span>
+        <span class="val-display" id="inflationVal">2.00%</span>
+      </div>
+      <input type="range" id="inflation" min="0" max="10" step="0.25" value="2.0" oninput="calculate()">
+    </div>
+    <div class="form-group">
+      <div class="label-row">
+        <span>購買力額外折損 (%)</span>
+        <span class="val-display" id="extraDiscountVal">1.00%</span>
+      </div>
+      <input type="range" id="extraDiscount" min="0" max="20" step="0.25" value="1.0" oninput="calculate()">
+    </div>
+    <div class="form-group">
+      <div class="label-row">
+        <span>手頭資產：股票配置 (%)</span>
+        <span class="val-display" id="stockRatioVal">0%</span>
+      </div>
+      <input type="range" id="stockRatio" min="0" max="100" step="5" value="0" oninput="calculate()">
+    </div>
+    <div class="form-group">
+      <div class="label-row">
+        <span>股票年化收益率 (%)</span>
+        <span class="val-display" id="stockReturnVal">6.00%</span>
+      </div>
+      <input type="range" id="stockReturn" min="0" max="15" step="0.25" value="6.0" oninput="calculate()">
+    </div>
+    <div class="form-group">
+      <div class="label-row">
+        <span>債券年化收益率 (%)</span>
+        <span class="val-display" id="bondReturnVal">3.50%</span>
+      </div>
+      <input type="range" id="bondReturn" min="0" max="10" step="0.25" value="3.5" oninput="calculate()">
+    </div>
+    <div class="form-group">
+      <div class="label-row">
+        <span>模擬年期 (年)</span>
+        <span class="val-display" id="simYearsVal">30 年</span>
+      </div>
+      <input type="range" id="simYears" min="10" max="40" step="1" value="30" oninput="calculate()">
+    </div>
+    <p style="font-size: 11px; color: var(--text-sub); margin-top: 8px;">
+      註：根據社會福利署指引，物業及保單逆按揭發放款項屬於貸款，完全豁免 OALA 資產與入息審查。
+    </p>
+  </div>
+
+  <!-- 模擬結果摘要 -->
+  <div class="section-title">｜ 模擬結果摘要</div>
+  <div class="card">
+    <div id="statusBanner" class="status-banner fail">
+      ✕ 首年未能符合長生津資格 (資產超標 & 入息超標)
+    </div>
+
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="title">首年每月總年金收入</div>
+        <div class="value" id="resAnnuity" style="color: var(--accent-blue);">$8,085</div>
+      </div>
+      <div class="summary-card">
+        <div class="title">首年每月提領資產</div>
+        <div class="value" id="resWithdrawal" style="color: var(--accent-pink);">$0</div>
+      </div>
+      <div class="summary-card">
+        <div class="title">首年每月股債收益</div>
+        <div class="value" id="resInvestment" style="color: var(--accent-purple);">$1,313</div>
+      </div>
+      <div class="summary-card">
+        <div class="title">首年每月長生津 (總額)</div>
+        <div class="value" id="resOALA" style="color: var(--accent-green);">$0</div>
+      </div>
+      <div class="full-width-card">
+        <div class="title">首年每月總實收金額 (含提領)</div>
+        <div class="value" id="resTotal">$9,398</div>
+      </div>
+    </div>
+
+    <!-- 年齡分析面板 -->
+    <div class="analysis-card">
+      <div style="font-weight: bold; margin-bottom: 6px;">長者生活津貼申請成功年齡分析</div>
+      <ul id="ageAnalysisList">
+        <!-- 經由 JS 動態生成 -->
+      </ul>
+    </div>
+  </div>
+
+  <!-- 圖表展示 -->
+  <div class="card">
+    <div style="font-weight: bold; font-size: 14px;">圖表 1: 每月入息結構 vs 該年總入息</div>
+    <div class="chart-container">
+      <canvas id="chart1"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-weight: bold; font-size: 14px;">圖表 2: 每月總現金流——名目金額 vs 實質購買力 (折現)</div>
+    <div class="chart-container">
+      <canvas id="chart2"></canvas>
+    </div>
+  </div>
+
+  <!-- 詳細數據表格 -->
+  <div class="card">
+    <div style="font-weight: bold; font-size: 14px;">｜ 年度詳細現金流表</div>
+    <div class="table-container">
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th>年次 (歲)</th>
+            <th>HKMC年金</th>
+            <th>資產提領</th>
+            <th>逆按揭總額</th>
+            <th>可審查資產(現金/股債)</th>
+            <th>OALA資格</th>
+            <th>名目總月收(不含提領)</th>
+            <th>折現實質購買力</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 經由 JS 動態生成 -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 底部備註 -->
+  <div class="notes">
+    <p>* 2026年度社署長生津基本限額（首年基準）：單身資產上限 $41.5 萬 / 入息上限 $10,900（每人津貼 $4,345）；夫婦資產上限 $63 萬 / 入息上限 $16,680（夫婦合共津貼 $8,690）。</p>
+    <p>* 假設長者生活津貼發放金額、單人及夫婦之資產上限與入息上限，每年皆會按「預期基本年通脹率」進行動態調整。</p>
+    <p>* 香港年金（HKMC）派息率依性別及投保年齡有所差異（男性因預期壽命原因，每月年金回報略高於相同年齡之女性）。</p>
+    <p>* 年齡審查規則：長生津門檻為 65 歲。若夫婦中僅一人達 65 歲，則以「單身限額」審查並發放單人津貼；當雙方均達 65 歲時，系統會自動轉換為「夫婦限額」審查並發放兩人份津貼。</p>
+  </div>
+
+  <div class="footer-credits">
+    Created by Anthony c t LEE, Sep 2026.<br>
+    Disclaimer: This simulator is for educational and informational purposes only and does not constitute financial advice.
+  </div>
+</div>
+
+<script>
+  let chart1Instance = null;
+  let chart2Instance = null;
+
+  const STORAGE_KEY = 'hk_annuity_sim_config_v05';
+
+  const defaultValues = {
+    appMode: 'couple',
+    singleGender: 'husband',
+    hBuyAnnuity: true,
+    hAge: '65',
+    hAmt: '800000',
+    wBuyAnnuity: true,
+    wAge: '63',
+    wAmt: '650000',
+    liquidAssets: '450000',
+    monthlyWithdrawalRange: '0',
+    otherIncome: '0',
+    propRev: '0',
+    propStart: '10',
+    propTerm: '10',
+    insRev: '0',
+    insStart: '15',
+    insTerm: '15',
+    inflation: '2.0',
+    extraDiscount: '1.0',
+    stockRatio: '0',
+    stockReturn: '6.0',
+    bondReturn: '3.5',
+    simYears: '30'
+  };
+
+  function getMonthlyWithdrawal() {
+    return parseFloat(document.getElementById('monthlyWithdrawalRange').value);
+  }
+
+  function saveToLocalStorage() {
+    const config = {
+      appMode: document.getElementById('appMode').value,
+      singleGender: document.getElementById('singleGender').value,
+      hBuyAnnuity: document.getElementById('hBuyAnnuity').checked,
+      hAge: document.getElementById('hAge').value,
+      hAmt: document.getElementById('hAmt').value,
+      wBuyAnnuity: document.getElementById('wBuyAnnuity').checked,
+      wAge: document.getElementById('wAge').value,
+      wAmt: document.getElementById('wAmt').value,
+      liquidAssets: document.getElementById('liquidAssets').value,
+      monthlyWithdrawalRange: document.getElementById('monthlyWithdrawalRange').value,
+      otherIncome: document.getElementById('otherIncome').value,
+      propRev: document.getElementById('propRev').value,
+      propStart: document.getElementById('propStart').value,
+      propTerm: document.getElementById('propTerm').value,
+      insRev: document.getElementById('insRev').value,
+      insStart: document.getElementById('insStart').value,
+      insTerm: document.getElementById('insTerm').value,
+      inflation: document.getElementById('inflation').value,
+      extraDiscount: document.getElementById('extraDiscount').value,
+      stockRatio: document.getElementById('stockRatio').value,
+      stockReturn: document.getElementById('stockReturn').value,
+      bondReturn: document.getElementById('bondReturn').value,
+      simYears: document.getElementById('simYears').value
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+  }
+
+  function loadFromLocalStorage() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
+    try {
+      const config = JSON.parse(saved);
+      if (config.appMode !== undefined) document.getElementById('appMode').value = config.appMode;
+      if (config.singleGender !== undefined) document.getElementById('singleGender').value = config.singleGender;
+      if (config.hBuyAnnuity !== undefined) document.getElementById('hBuyAnnuity').checked = config.hBuyAnnuity;
+      if (config.hAge !== undefined) document.getElementById('hAge').value = config.hAge;
+      if (config.hAmt !== undefined) document.getElementById('hAmt').value = config.hAmt;
+      if (config.wBuyAnnuity !== undefined) document.getElementById('wBuyAnnuity').checked = config.wBuyAnnuity;
+      if (config.wAge !== undefined) document.getElementById('wAge').value = config.wAge;
+      if (config.wAmt !== undefined) document.getElementById('wAmt').value = config.wAmt;
+      if (config.liquidAssets !== undefined) document.getElementById('liquidAssets').value = config.liquidAssets;
+      if (config.monthlyWithdrawalRange !== undefined) document.getElementById('monthlyWithdrawalRange').value = config.monthlyWithdrawalRange;
+      if (config.otherIncome !== undefined) document.getElementById('otherIncome').value = config.otherIncome;
+      if (config.propRev !== undefined) document.getElementById('propRev').value = config.propRev;
+      if (config.propStart !== undefined) document.getElementById('propStart').value = config.propStart;
+      if (config.propTerm !== undefined) document.getElementById('propTerm').value = config.propTerm;
+      if (config.insRev !== undefined) document.getElementById('insRev').value = config.insRev;
+      if (config.insStart !== undefined) document.getElementById('insStart').value = config.insStart;
+      if (config.insTerm !== undefined) document.getElementById('insTerm').value = config.insTerm;
+      if (config.inflation !== undefined) document.getElementById('inflation').value = config.inflation;
+      if (config.extraDiscount !== undefined) document.getElementById('extraDiscount').value = config.extraDiscount;
+      if (config.stockRatio !== undefined) document.getElementById('stockRatio').value = config.stockRatio;
+      if (config.stockReturn !== undefined) document.getElementById('stockReturn').value = config.stockReturn;
+      if (config.bondReturn !== undefined) document.getElementById('bondReturn').value = config.bondReturn;
+      if (config.simYears !== undefined) document.getElementById('simYears').value = config.simYears;
+    } catch(e) {
+      console.error("Failed to parse saved localStorage config", e);
+    }
+  }
+
+  function resetDefaults() {
+    localStorage.removeItem(STORAGE_KEY);
+    document.getElementById('appMode').value = defaultValues.appMode;
+    document.getElementById('singleGender').value = defaultValues.singleGender;
+    document.getElementById('hBuyAnnuity').checked = defaultValues.hBuyAnnuity;
+    document.getElementById('hAge').value = defaultValues.hAge;
+    document.getElementById('hAmt').value = defaultValues.hAmt;
+    document.getElementById('wBuyAnnuity').checked = defaultValues.wBuyAnnuity;
+    document.getElementById('wAge').value = defaultValues.wAge;
+    document.getElementById('wAmt').value = defaultValues.wAmt;
+    document.getElementById('liquidAssets').value = defaultValues.liquidAssets;
+    document.getElementById('monthlyWithdrawalRange').value = defaultValues.monthlyWithdrawalRange;
+    document.getElementById('otherIncome').value = defaultValues.otherIncome;
+    document.getElementById('propRev').value = defaultValues.propRev;
+    document.getElementById('propStart').value = defaultValues.propStart;
+    document.getElementById('propTerm').value = defaultValues.propTerm;
+    document.getElementById('insRev').value = defaultValues.insRev;
+    document.getElementById('insStart').value = defaultValues.insStart;
+    document.getElementById('insTerm').value = defaultValues.insTerm;
+    document.getElementById('inflation').value = defaultValues.inflation;
+    document.getElementById('extraDiscount').value = defaultValues.extraDiscount;
+    document.getElementById('stockRatio').value = defaultValues.stockRatio;
+    document.getElementById('stockReturn').value = defaultValues.stockReturn;
+    document.getElementById('bondReturn').value = defaultValues.bondReturn;
+    document.getElementById('simYears').value = defaultValues.simYears;
+    calculate();
+  }
+
+  function getAnnuityFactor(age, gender) {
+    if (age < 60) return 0;
+    const maleMap = {
+      60: 51, 61: 52, 62: 53, 63: 54, 64: 56,
+      65: 58, 66: 59, 67: 61, 68: 62, 69: 64,
+      70: 66, 71: 68, 72: 70, 73: 72, 74: 75,
+      75: 78, 76: 81, 77: 84, 78: 87, 79: 90, 80: 94
+    };
+    const femaleMap = {
+      60: 47, 61: 48, 62: 49, 63: 50, 64: 51,
+      65: 53, 66: 54, 67: 56, 68: 57, 69: 59,
+      70: 61, 71: 63, 72: 65, 73: 67, 74: 69,
+      75: 72, 76: 75, 77: 78, 78: 81, 79: 84, 80: 88
+    };
+    const factorMap = (gender === 'female' || gender === 'wife') ? femaleMap : maleMap;
+    return (factorMap[age] || 58) / 10000;
+  }
+
+  function formatCurrency(val) {
+    return '$' + Math.round(val).toLocaleString('en-US');
+  }
+
+  function calculate() {
+    saveToLocalStorage();
+
+    const mode = document.getElementById('appMode').value;
+    const singleGender = document.getElementById('singleGender').value;
+
+    const hBuy = document.getElementById('hBuyAnnuity').checked;
+    const hAge = parseInt(document.getElementById('hAge').value);
+    const hAmt = parseFloat(document.getElementById('hAmt').value);
+
+    const wBuy = document.getElementById('wBuyAnnuity').checked;
+    const wAge = parseInt(document.getElementById('wAge').value);
+    const wAmt = parseFloat(document.getElementById('wAmt').value);
+
+    const liquidAssetsInit = parseFloat(document.getElementById('liquidAssets').value);
+    const monthlyWithdrawalInit = getMonthlyWithdrawal();
+    const otherIncome = parseFloat(document.getElementById('otherIncome').value);
+
+    const propRev = parseFloat(document.getElementById('propRev').value);
+    const propStart = parseInt(document.getElementById('propStart').value);
+    const propTerm = document.getElementById('propTerm').value;
+
+    const insRev = parseFloat(document.getElementById('insRev').value);
+    const insStart = parseInt(document.getElementById('insStart').value);
+    const insTerm = document.getElementById('insTerm').value;
+
+    const inflation = parseFloat(document.getElementById('inflation').value) / 100;
+    const extraDiscount = parseFloat(document.getElementById('extraDiscount').value) / 100;
+    const stockRatio = parseFloat(document.getElementById('stockRatio').value) / 100;
+    const stockReturn = parseFloat(document.getElementById('stockReturn').value) / 100;
+    const bondReturn = parseFloat(document.getElementById('bondReturn').value) / 100;
+    const simYears = parseInt(document.getElementById('simYears').value);
+
+    if (mode === 'single') {
+      document.getElementById('singleGenderGroup').style.display = 'block';
+      if (singleGender === 'husband') {
+        document.getElementById('husbandSection').style.display = 'block';
+        document.getElementById('wifeSection').style.display = 'none';
+        document.getElementById('hBuyGroup').style.display = 'flex';
+        document.getElementById('hBuyLabel').innerText = '丈夫購買香港年金';
+        document.getElementById('hAgeLabel').innerText = '丈夫目前年齡';
+        document.getElementById('hAmtLabel').innerText = '丈夫年金金額';
+      } else {
+        document.getElementById('husbandSection').style.display = 'none';
+        document.getElementById('wifeSection').style.display = 'block';
+        document.getElementById('wBuyGroup').style.display = 'flex';
+        document.getElementById('wBuyLabel').innerText = '太太購買香港年金';
+        document.getElementById('wAgeLabel').innerText = '太太目前年齡';
+        document.getElementById('wAmtLabel').innerText = '太太年金金額';
+      }
+    } else {
+      document.getElementById('singleGenderGroup').style.display = 'none';
+      document.getElementById('husbandSection').style.display = 'block';
+      document.getElementById('wifeSection').style.display = 'block';
+      document.getElementById('hBuyGroup').style.display = 'flex';
+      document.getElementById('hBuyLabel').innerText = '丈夫購買香港年金';
+      document.getElementById('hAgeLabel').innerText = '丈夫目前年齡';
+      document.getElementById('hAmtLabel').innerText = '丈夫年金金額';
+      document.getElementById('wBuyGroup').style.display = 'flex';
+      document.getElementById('wBuyLabel').innerText = '妻子購買香港年金';
+      document.getElementById('wAgeLabel').innerText = '妻子目前年齡';
+      document.getElementById('wAmtLabel').innerText = '妻子年金金額';
+    }
+
+    document.getElementById('hAgeVal').innerText = hAge + ' 歲';
+    document.getElementById('hAmtVal').innerText = formatCurrency(hAmt);
+    document.getElementById('wAgeVal').innerText = wAge + ' 歲';
+    document.getElementById('wAmtVal').innerText = formatCurrency(wAmt);
+    document.getElementById('liquidAssetsVal').innerText = formatCurrency(liquidAssetsInit);
+    document.getElementById('monthlyWithdrawalVal').innerText = formatCurrency(monthlyWithdrawalInit);
+    document.getElementById('otherIncomeVal').innerText = formatCurrency(otherIncome);
+    document.getElementById('propRevVal').innerText = formatCurrency(propRev);
+    document.getElementById('propStartVal').innerText = `第 ${propStart} 年起`;
+    document.getElementById('insRevVal').innerText = formatCurrency(insRev);
+    document.getElementById('insStartVal').innerText = `第 ${insStart} 年起`;
+    document.getElementById('inflationVal').innerText = (inflation * 100).toFixed(2) + '%';
+    document.getElementById('extraDiscountVal').innerText = (extraDiscount * 100).toFixed(2) + '%';
+    document.getElementById('stockRatioVal').innerText = (stockRatio * 100).toFixed(0) + '%';
+    document.getElementById('stockReturnVal').innerText = (stockReturn * 100).toFixed(2) + '%';
+    document.getElementById('bondReturnVal').innerText = (bondReturn * 100).toFixed(2) + '%';
+    document.getElementById('simYearsVal').innerText = simYears + ' 年';
+
+    let hMonthlyAnnuity = 0;
+    let wMonthlyAnnuity = 0;
+
+    if (mode === 'single') {
+      if (singleGender === 'husband' && hBuy && hAge >= 60) {
+        hMonthlyAnnuity = hAmt * getAnnuityFactor(hAge, 'male');
+      } else if (singleGender === 'wife' && wBuy && wAge >= 60) {
+        wMonthlyAnnuity = wAmt * getAnnuityFactor(wAge, 'female');
+      }
+    } else {
+      if (hBuy && hAge >= 60) {
+        hMonthlyAnnuity = hAmt * getAnnuityFactor(hAge, 'male');
+      }
+      if (wBuy && wAge >= 60) {
+        wMonthlyAnnuity = wAmt * getAnnuityFactor(wAge, 'female');
+      }
+    }
+    const totalAnnuity = hMonthlyAnnuity + wMonthlyAnnuity;
+    const portfolioReturn = stockRatio * stockReturn + (1 - stockRatio) * bondReturn;
+
+    const BASE_OALA_SINGLE_PAYMENT = 4345;
+    const BASE_OALA_SINGLE_ASSET = 415000;
+    const BASE_OALA_SINGLE_INCOME = 10900;
+
+    const BASE_OALA_COUPLE_PAYMENT = 8690;
+    const BASE_OALA_COUPLE_ASSET = 630000;
+    const BASE_OALA_COUPLE_INCOME = 16680;
+
+    const labels = [];
+    const annuityData = [];
+    const withdrawalData = [];
+    const revData = [];
+    const invData = [];
+    const otherData = [];
+    const oalaData = [];
+    const totalNominalData = [];
+    const totalRealData = [];
+    const assetsData = [];
+
+    let currentLiquidAssets = liquidAssetsInit;
+    let currentMonthlyWithdrawal = monthlyWithdrawalInit;
+
+    let hEligibleAge = null;
+    let wEligibleAge = null;
+    let coupleEligibleYear = null;
+    const tableRows = [];
+
+    for (let y = 1; y <= simYears; y++) {
+      const curHAge = hAge + (y - 1);
+      const curWAge = wAge + (y - 1);
+
+      const inflationFactor = Math.pow(1 + inflation, y - 1);
+      const oalaSinglePayment = BASE_OALA_SINGLE_PAYMENT * inflationFactor;
+      const oalaSingleAsset = BASE_OALA_SINGLE_ASSET * inflationFactor;
+      const oalaSingleIncome = BASE_OALA_SINGLE_INCOME * inflationFactor;
+
+      const oalaCouplePayment = BASE_OALA_COUPLE_PAYMENT * inflationFactor;
+      const oalaCoupleAsset = BASE_OALA_COUPLE_ASSET * inflationFactor;
+      const oalaCoupleIncome = BASE_OALA_COUPLE_INCOME * inflationFactor;
+
+      let propActive = false;
+      if (y >= propStart) {
+        if (propTerm === 'life') propActive = true;
+        else if (y < propStart + parseInt(propTerm)) propActive = true;
+      }
+      const curPropRev = propActive ? propRev : 0;
+
+      let insActive = false;
+      if (y >= insStart) {
+        if (insTerm === 'life') insActive = true;
+        else if (y < insStart + parseInt(insTerm)) insActive = true;
+      }
+      const curInsRev = insActive ? insRev : 0;
+
+      const totalRev = curPropRev + curInsRev;
+      
+      // 確保股債收息最小值為 0
+      const monthlyInvIncome = Math.max(0, (currentLiquidAssets * portfolioReturn) / 12);
+
+      // 資產提領上限控制：若剩餘資產不足全年的提領額，則限縮該年提領，若資產已歸零則歸零
+      let actualMonthlyWithdrawal = currentMonthlyWithdrawal;
+      const annualNeededWithdrawal = actualMonthlyWithdrawal * 12;
+      if (currentLiquidAssets <= 0) {
+        actualMonthlyWithdrawal = 0;
+      } else if (currentLiquidAssets < annualNeededWithdrawal) {
+        actualMonthlyWithdrawal = currentLiquidAssets / 12;
+      }
+
+      let oalaBenefit = 0;
+      let oalaStatusText = "不符合";
+
+      const testableIncome = totalAnnuity + otherIncome;
+
+      if (mode === 'single') {
+        const curAge = singleGender === 'husband' ? curHAge : curWAge;
+        if (curAge >= 65) {
+          const passAsset = currentLiquidAssets <= oalaSingleAsset;
+          const passIncome = testableIncome <= oalaSingleIncome;
+          if (passAsset && passIncome) {
+            oalaBenefit = oalaSinglePayment;
+            oalaStatusText = "成功領取";
+            if (singleGender === 'husband' && !hEligibleAge) hEligibleAge = curAge;
+            if (singleGender === 'wife' && !wEligibleAge) wEligibleAge = curAge;
+          } else {
+            let reasons = [];
+            if (!passAsset) reasons.push("資產超標");
+            if (!passIncome) reasons.push("入息超標");
+            oalaStatusText = "未符合 (" + reasons.join("&") + ")";
+          }
+        } else {
+          oalaStatusText = "未滿65歲";
+        }
+      } else {
+        const h65 = curHAge >= 65;
+        const w65 = curWAge >= 65;
+
+        if (h65 && w65) {
+          const passAsset = currentLiquidAssets <= oalaCoupleAsset;
+          const passIncome = testableIncome <= oalaCoupleIncome;
+          if (passAsset && passIncome) {
+            oalaBenefit = oalaCouplePayment;
+            oalaStatusText = "雙方成功(夫婦)";
+            if (!coupleEligibleYear) coupleEligibleYear = y;
+          } else {
+            let reasons = [];
+            if (!passAsset) reasons.push("資產超標");
+            if (!passIncome) reasons.push("入息超標");
+            oalaStatusText = "未符合 (" + reasons.join("&") + ")";
+          }
+        } else if (h65 || w65) {
+          const passAsset = currentLiquidAssets <= oalaSingleAsset;
+          const passIncome = testableIncome <= oalaSingleIncome;
+          if (passAsset && passIncome) {
+            oalaBenefit = oalaSinglePayment;
+            oalaStatusText = "單方成功(單人)";
+            if (h65 && !hEligibleAge) hEligibleAge = curHAge;
+            if (w65 && !wEligibleAge) wEligibleAge = curWAge;
+          } else {
+            let reasons = [];
+            if (!passAsset) reasons.push("資產超標");
+            if (!passIncome) reasons.push("入息超標");
+            oalaStatusText = "未符合 (" + reasons.join("&") + ")";
+          }
+        } else {
+          oalaStatusText = "均未滿65歲";
+        }
+      }
+
+      const totalNominalIncome = totalAnnuity + totalRev + monthlyInvIncome + otherIncome + oalaBenefit;
+      const totalCashFlowWithWithdrawal = totalNominalIncome + actualMonthlyWithdrawal;
+
+      // 修正後的實質購買力折現：以總現金流除以綜合通脹因子 (inflation + extraDiscount)
+      const totalDiscountRate = inflation + extraDiscount;
+      const realPurchasingPower = totalCashFlowWithWithdrawal / Math.pow(1 + totalDiscountRate, y - 1);
+
+      let labelAge = '';
+      if (mode === 'single') {
+        const activeAge = singleGender === 'husband' ? curHAge : curWAge;
+        labelAge = `第 ${y} 年 (${activeAge}歲)`;
+      } else {
+        labelAge = `第 ${y} 年 (${curHAge} / ${curWAge}歲)`;
+      }
+
+      labels.push(`第 ${y} 年`);
+      annuityData.push(totalAnnuity);
+      withdrawalData.push(actualMonthlyWithdrawal);
+      revData.push(totalRev);
+      invData.push(monthlyInvIncome);
+      otherData.push(otherIncome);
+      oalaData.push(oalaBenefit);
+      totalNominalData.push(totalNominalIncome);
+      totalRealData.push(realPurchasingPower);
+      assetsData.push(currentLiquidAssets);
+
+      tableRows.push({
+        ageStr: labelAge,
+        annuity: totalAnnuity,
+        withdrawal: actualMonthlyWithdrawal,
+        rev: totalRev,
+        assets: currentLiquidAssets,
+        oalaStatus: oalaStatusText,
+        nominalIncome: totalNominalIncome,
+        cashFlow: totalCashFlowWithWithdrawal,
+        real: realPurchasingPower
+      });
+
+      // 資產滾存更新
+      currentLiquidAssets = (currentLiquidAssets - actualMonthlyWithdrawal * 12) * (1 + portfolioReturn);
+      if (currentLiquidAssets < 0) currentLiquidAssets = 0;
+
+      currentMonthlyWithdrawal *= (1 + inflation);
+    }
+
+    const firstYearAnnuity = annuityData[0];
+    const firstYearWithdrawal = withdrawalData[0];
+    const firstYearInv = invData[0];
+    const firstYearOALA = oalaData[0];
+    const firstYearTotalCash = tableRows[0].cashFlow;
+
+    document.getElementById('resAnnuity').innerText = formatCurrency(firstYearAnnuity);
+    document.getElementById('resWithdrawal').innerText = formatCurrency(firstYearWithdrawal);
+    document.getElementById('resInvestment').innerText = formatCurrency(firstYearInv);
+    document.getElementById('resOALA').innerText = formatCurrency(firstYearOALA);
+    document.getElementById('resTotal').innerText = formatCurrency(firstYearTotalCash);
+
+    const bannerEl = document.getElementById('statusBanner');
+    if (firstYearOALA > 0) {
+      bannerEl.className = 'status-banner pass';
+      bannerEl.innerText = '✓ 首年成功符合並領取長者生活津貼';
+    } else {
+      bannerEl.className = 'status-banner fail';
+      bannerEl.innerText = '✕ 首年未能符合長生津資格 (' + tableRows[0].oalaStatus + ')';
+    }
+
+    const ageAnalysisList = document.getElementById('ageAnalysisList');
+    ageAnalysisList.innerHTML = '';
+
+    if (mode === 'single') {
+      const li = document.createElement('li');
+      const titleName = singleGender === 'husband' ? '丈夫' : '太太';
+      const eligibleAge = singleGender === 'husband' ? hEligibleAge : wEligibleAge;
+
+      if (eligibleAge) {
+        li.innerHTML = `<b>${titleName} (單人獨立模式)</b>：於 <b>${eligibleAge} 歲</b> 首次成功領取長生津。`;
+      } else {
+        li.innerHTML = `<b>${titleName} (單人獨立模式)</b>：在模擬期內未能成功領取 (資產/入息超標，或未滿 65 歲)。`;
+      }
+      ageAnalysisList.appendChild(li);
+    } else {
+      const liH = document.createElement('li');
+      liH.innerHTML = hEligibleAge 
+        ? `<b>丈夫 (單人獨立模式)</b>：於 <b>${hEligibleAge} 歲</b> 首次成功以單身身份領取。`
+        : `<b>丈夫 (單人獨立模式)</b>：未曾以單身身份領取 (或因未滿 65 歲/審查未通過)。`;
+      ageAnalysisList.appendChild(liH);
+
+      const liW = document.createElement('li');
+      liW.innerHTML = wEligibleAge 
+        ? `<b>妻子 (單人獨立模式)</b>：於 <b>${wEligibleAge} 歲</b> 首次成功以單身身份領取。`
+        : `<b>妻子 (單人獨立模式)</b>：未曾以單身身份領取 (或因未滿 65 歲/審查未通過)。`;
+      ageAnalysisList.appendChild(liW);
+
+      const liC = document.createElement('li');
+      if (coupleEligibleYear) {
+        const hCAge = hAge + (coupleEligibleYear - 1);
+        const wCAge = wAge + (coupleEligibleYear - 1);
+        liC.innerHTML = `<b>夫婦 (共同審查模式)</b>：於退休第 <b>${coupleEligibleYear} 年</b> (雙方分別 <b>${hCAge} / ${wCAge} 歲</b>) 成功以夫婦身份領取。`;
+      } else {
+        liC.innerHTML = `<b>夫婦 (共同審查模式)</b>：在模擬期內雙方未能以夫婦身份成功領取 (資產/入息超標，或未曾同時滿 65 歲)。`;
+      }
+      ageAnalysisList.appendChild(liC);
+    }
+
+    const tbody = document.getElementById('dataTable').querySelector('tbody');
+    tbody.innerHTML = '';
+    tableRows.forEach(row => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${row.ageStr}</td>
+        <td>${formatCurrency(row.annuity)}</td>
+        <td>${formatCurrency(row.withdrawal)}</td>
+        <td>${formatCurrency(row.rev)}</td>
+        <td>${formatCurrency(row.assets)}</td>
+        <td><span style="color:${row.oalaStatus.includes('成功') ? '#86efac' : '#fca5a5'}">${row.oalaStatus}</span></td>
+        <td><b>${formatCurrency(row.nominalIncome)}</b></td>
+        <td style="color:var(--accent-yellow);">${formatCurrency(row.real)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    renderCharts(labels, annuityData, withdrawalData, revData, invData, otherData, oalaData, totalNominalData, totalRealData);
+  }
+
+  function renderCharts(labels, annuity, withdrawal, rev, inv, other, oala, nominal, real) {
+    if (chart1Instance) chart1Instance.destroy();
+    if (chart2Instance) chart2Instance.destroy();
+
+    const tooltipOptions = {
+      callbacks: {
+        label: function(context) {
+          let label = context.dataset.label || '';
+          if (label) label += ': ';
+          if (context.parsed.y !== null) {
+            label += '$' + Math.round(context.parsed.y).toLocaleString('en-US');
+          }
+          return label;
+        }
+      }
+    };
+
+    const ctx1 = document.getElementById('chart1').getContext('2d');
+    chart1Instance = new Chart(ctx1, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: '每月年金收入', data: annuity, backgroundColor: '#3b82f6', stack: 'Stack 0' },
+          { label: '資產每月提領額', data: withdrawal, backgroundColor: '#ec4899', stack: 'Stack 0' },
+          { label: '逆按揭總收入 (物業+保單)', data: rev, backgroundColor: '#f97316', stack: 'Stack 0' },
+          { label: '每月股債收益', data: inv, backgroundColor: '#a855f7', stack: 'Stack 0' },
+          { label: '其他每月入息', data: other, backgroundColor: '#06b6d4', stack: 'Stack 0' },
+          { label: '每月長生津', data: oala, backgroundColor: '#22c55e', stack: 'Stack 0' },
+          { label: '該年總入息 (不含提領)', data: nominal, type: 'line', borderColor: '#eab308', backgroundColor: '#eab308', borderWidth: 2, fill: false }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { stacked: true, ticks: { color: '#a0a0a0', font: { size: 10 } }, grid: { color: '#2c2c2c' } },
+          y: { stacked: true, ticks: { color: '#a0a0a0', font: { size: 10 } }, grid: { color: '#2c2c2c' } }
+        },
+        plugins: {
+          legend: { labels: { color: '#e0e0e0', font: { size: 10 } } },
+          tooltip: tooltipOptions
+        }
+      }
+    });
+
+    const ctx2 = document.getElementById('chart2').getContext('2d');
+    chart2Instance = new Chart(ctx2, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: '每月總實收現金流 (含提領)', data: nominal.map((v, i) => v + withdrawal[i]), borderColor: '#3b82f6', backgroundColor: '#3b82f6', borderWidth: 2, fill: false },
+          { label: '實質購買力 (折現)', data: real, borderColor: '#eab308', backgroundColor: '#eab308', borderWidth: 2, borderDash: [5, 5], fill: false }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { ticks: { color: '#a0a0a0', font: { size: 10 } }, grid: { color: '#2c2c2c' } },
+          y: { ticks: { color: '#a0a0a0', font: { size: 10 } }, grid: { color: '#2c2c2c' } }
+        },
+        plugins: {
+          legend: { labels: { color: '#e0e0e0', font: { size: 10 } } },
+          tooltip: tooltipOptions
+        }
+      }
+    });
+  }
+
+  window.onload = function() {
+    loadFromLocalStorage();
+    calculate();
+  };
+</script>
+
+</body>
+</html>
