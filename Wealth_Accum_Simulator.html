@@ -96,13 +96,36 @@
  margin-bottom: 20px;
  }
 
+ .controls-header-row {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ margin-bottom: 14px;
+ }
+
  .controls-title {
  font-size: 1rem;
  font-weight: bold;
- margin-bottom: 14px;
  color: #ffffff;
  padding-left: 10px;
  border-left: 4px solid var(--chart-benchmark);
+ margin: 0;
+ }
+
+ .btn-reset {
+ background-color: #2b4c7e;
+ color: #ffffff;
+ border: none;
+ border-radius: 6px;
+ padding: 5px 10px;
+ font-size: 0.75rem;
+ font-weight: 600;
+ cursor: pointer;
+ transition: background-color 0.2s;
+ }
+
+ .btn-reset:hover {
+ background-color: #3b6aa3;
  }
 
  .slider-grid {
@@ -284,15 +307,18 @@
  <div class="app-header">
  <h1 class="app-title-zh">長期儲蓄與實質購買力積累模擬器</h1>
  <div class="app-title-en">Wealth Accumulation & Purchasing Power Simulator</div>
- <p class="app-subtitle">版本 v0.2</p>
+ <p class="app-subtitle">版本 v0.21</p>
  </div>
 
  <!-- 1. 參數設定 -->
  <div class="controls-card">
+ <div class="controls-header-row">
  <div class="controls-title">儲蓄與投資參數設定</div>
+ <button type="button" class="btn-reset" id="btn_reset_defaults">重置預設值</button>
+ </div>
 
  <div class="slider-grid">
- <!-- 1.1 現有初始儲蓄本金 (梯級 0 ~ 1,000萬, 減半後步長: 2.5k / 25k / 250k, 預設 20萬/index=44) -->
+ <!-- 1.1 現有初始儲蓄本金 -->
  <div class="control-group">
  <div class="control-label">
  <span>現有初始儲蓄本金</span>
@@ -301,7 +327,7 @@
  <input type="range" id="param_initial_step" min="0" max="112" step="1" value="44">
  </div>
 
- <!-- 1.2 首年每月儲蓄額 (梯級 0 ~ 20萬, 減半後步長: 250 / 1.25k / 5k, 預設 1萬/index=40) -->
+ <!-- 1.2 首年每月儲蓄額 -->
  <div class="control-group">
  <div class="control-label">
  <span>首年每月儲蓄額</span>
@@ -316,7 +342,7 @@
  <span class="value-display" id="val_savings_growth">3.00%</span>
  </div>
  <input type="range" id="param_savings_growth" min="0.00" max="10.00" step="0.25" value="3.00">
- <div class="sub-hint">💡 說明：模擬每年因加薪或儲蓄能力提升而增加每月定期儲蓄額。</div>
+ <div class="sub-hint">💡 說明：模擬每年因加薪或儲蓄能力提升而增加每月傳統儲蓄額。</div>
  </div>
 
  <div class="control-group">
@@ -433,292 +459,349 @@
  const formatPercent = (val) => Number(val).toFixed(2) + '%';
  const formatYears = (val) => val + ' 年';
 
+ const STORAGE_KEY = 'wealth_accum_simulator_params_v0.21';
+
  // -------------------------------------------------------------
- // 分級梯級 (Segmented Step) 映射函式 (每步數值減半)
+ // 預設值定義
  // -------------------------------------------------------------
- // 1. 初始本金: 0 ~ 1,000萬 (113 個刻度 0..112)
+ const defaultValues = {
+  param_initial_step: "44",
+  param_monthly_step: "40",
+  param_savings_growth: "3.00",
+  param_stock_pct: "80",
+  param_stock_ret: "7.00",
+  param_bond_ret: "4.00",
+  param_total_inflation: "2.50",
+  param_years: "25"
+ };
+
+ // -------------------------------------------------------------
+ // 分級梯級 (Segmented Step) 映射函式
+ // -------------------------------------------------------------
  function getInitialAmountFromStep(step) {
   step = Number(step);
   if (step === 0) return 0;
-  if (step <= 40) {
-    // 0 ~ 10萬: 每步 2,500 (1~40)
-    return step * 2500;
-  } else if (step <= 76) {
-    // 10萬 ~ 100萬: 每步 25,000 (41~76)
-    return 100000 + (step - 40) * 25000;
-  } else {
-    // 100萬 ~ 1,000萬: 每步 250,000 (77~112)
-    return 1000000 + (step - 76) * 250000;
-  }
+  if (step <= 40) return step * 2500;
+  else if (step <= 76) return 100000 + (step - 40) * 25000;
+  else return 1000000 + (step - 76) * 250000;
  }
 
- // 2. 每月儲蓄額: 0 ~ 20萬 (103 個刻度 0..102)
  function getMonthlyAmountFromStep(step) {
   step = Number(step);
   if (step === 0) return 0;
-  if (step <= 40) {
-    // 0 ~ 1萬: 每步 250 (1~40)
-    return step * 250;
-  } else if (step <= 72) {
-    // 1萬 ~ 5萬: 每步 1,250 (41~72)
-    return 10000 + (step - 40) * 1250;
-  } else {
-    // 5萬 ~ 20萬: 每步 5,000 (73~102)
-    return 50000 + (step - 72) * 5000;
-  }
+  if (step <= 40) return step * 250;
+  else if (step <= 72) return 10000 + (step - 40) * 1250;
+  else return 50000 + (step - 72) * 5000;
  }
 
  function getVal(id, fallback) {
- const el = document.getElementById(id);
- return el ? parseFloat(el.value) : fallback;
+  const el = document.getElementById(id);
+  return el ? parseFloat(el.value) : fallback;
  }
 
  function setTxt(id, txt) {
- const el = document.getElementById(id);
- if (el) el.textContent = txt;
+  const el = document.getElementById(id);
+  if (el) el.textContent = txt;
+ }
+
+ // -------------------------------------------------------------
+ // localStorage 本地數據儲存與讀取邏輯
+ // -------------------------------------------------------------
+ function saveToLocalStorage() {
+  const inputs = document.querySelectorAll('input[type="range"]');
+  const data = {};
+  inputs.forEach(input => {
+    data[input.id] = input.value;
+  });
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {
+    console.warn("無法寫入 localStorage:", e);
+  }
+ }
+
+ function loadFromLocalStorage() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const data = JSON.parse(saved);
+      Object.keys(data).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = data[id];
+      });
+    }
+  } catch (e) {
+    console.warn("無法讀取 localStorage:", e);
+  }
  }
 
  function getParams() {
- const initialStep = getVal('param_initial_step', 44);
- const monthlyStep = getVal('param_monthly_step', 40);
+  const initialStep = getVal('param_initial_step', 44);
+  const monthlyStep = getVal('param_monthly_step', 40);
 
- return {
- initial: getInitialAmountFromStep(initialStep),
- monthly: getMonthlyAmountFromStep(monthlyStep),
- savings_growth: getVal('param_savings_growth', 3.0) / 100,
- stock_pct: getVal('param_stock_pct', 80) / 100,
- stock_ret: getVal('param_stock_ret', 7.0) / 100,
- bond_ret: getVal('param_bond_ret', 4.0) / 100,
- total_inflation: getVal('param_total_inflation', 2.5) / 100,
- years: parseInt(getVal('param_years', 25), 10)
- };
+  return {
+   initial: getInitialAmountFromStep(initialStep),
+   monthly: getMonthlyAmountFromStep(monthlyStep),
+   savings_growth: getVal('param_savings_growth', 3.0) / 100,
+   stock_pct: getVal('param_stock_pct', 80) / 100,
+   stock_ret: getVal('param_stock_ret', 7.0) / 100,
+   bond_ret: getVal('param_bond_ret', 4.0) / 100,
+   total_inflation: getVal('param_total_inflation', 2.5) / 100,
+   years: parseInt(getVal('param_years', 25), 10)
+  };
  }
 
  function calculateData(params) {
- const { initial, monthly, savings_growth, stock_pct, stock_ret, bond_ret, total_inflation, years } = params;
+  const { initial, monthly, savings_growth, stock_pct, stock_ret, bond_ret, total_inflation, years } = params;
 
- const labels = [];
- const customAssetData = [];
- const totalPrincipalData = [];
- const realAssetData = [];
- const benchmarkAssetData = [];
- const monthlySavingsNominalData = [];
- const monthlySavingsRealData = [];
+  const labels = [];
+  const customAssetData = [];
+  const totalPrincipalData = [];
+  const realAssetData = [];
+  const benchmarkAssetData = [];
+  const monthlySavingsNominalData = [];
+  const monthlySavingsRealData = [];
 
- const portfolioRet = stock_pct * stock_ret + (1 - stock_pct) * bond_ret;
- const benchmarkRet = 0.5 * 0.07 + 0.5 * 0.04;
+  const portfolioRet = stock_pct * stock_ret + (1 - stock_pct) * bond_ret;
+  const benchmarkRet = 0.5 * 0.07 + 0.5 * 0.04;
 
- let currentBalCustom = initial;
- let currentBalBench = initial;
- let cumPrincipal = initial;
+  let currentBalCustom = initial;
+  let currentBalBench = initial;
+  let cumPrincipal = initial;
 
- for (let t = 0; t <= years; t++) {
- labels.push(t + ' 年');
+  for (let t = 0; t <= years; t++) {
+   labels.push(t + ' 年');
 
- const currentMonthlySavingsNominal = monthly * Math.pow(1 + savings_growth, t);
- const annualSavingsNominal = currentMonthlySavingsNominal * 12;
+   const currentMonthlySavingsNominal = monthly * Math.pow(1 + savings_growth, t);
+   const annualSavingsNominal = currentMonthlySavingsNominal * 12;
 
- const discountFactor = Math.pow(1 + total_inflation, t);
- const currentMonthlySavingsReal = currentMonthlySavingsNominal / discountFactor;
+   const discountFactor = Math.pow(1 + total_inflation, t);
+   const currentMonthlySavingsReal = currentMonthlySavingsNominal / discountFactor;
 
- monthlySavingsNominalData.push(Math.round(currentMonthlySavingsNominal));
- monthlySavingsRealData.push(Math.round(currentMonthlySavingsReal));
+   monthlySavingsNominalData.push(Math.round(currentMonthlySavingsNominal));
+   monthlySavingsRealData.push(Math.round(currentMonthlySavingsReal));
 
- customAssetData.push(Math.round(currentBalCustom));
- totalPrincipalData.push(Math.round(cumPrincipal));
- realAssetData.push(Math.round(currentBalCustom / discountFactor));
- benchmarkAssetData.push(Math.round(currentBalBench));
+   customAssetData.push(Math.round(currentBalCustom));
+   totalPrincipalData.push(Math.round(cumPrincipal));
+   realAssetData.push(Math.round(currentBalCustom / discountFactor));
+   benchmarkAssetData.push(Math.round(currentBalBench));
 
- if (t < years) {
- cumPrincipal += annualSavingsNominal;
- currentBalCustom = (currentBalCustom + annualSavingsNominal) * (1 + portfolioRet);
- currentBalBench = (currentBalBench + annualSavingsNominal) * (1 + benchmarkRet);
- }
- }
+   if (t < years) {
+    cumPrincipal += annualSavingsNominal;
+    currentBalCustom = (currentBalCustom + annualSavingsNominal) * (1 + portfolioRet);
+    currentBalBench = (currentBalBench + annualSavingsNominal) * (1 + benchmarkRet);
+   }
+  }
 
- return {
- labels,
- customAssetData,
- totalPrincipalData,
- realAssetData,
- benchmarkAssetData,
- monthlySavingsNominalData,
- monthlySavingsRealData,
- portfolioRet,
- benchmarkRet
- };
+  return {
+   labels,
+   customAssetData,
+   totalPrincipalData,
+   realAssetData,
+   benchmarkAssetData,
+   monthlySavingsNominalData,
+   monthlySavingsRealData,
+   portfolioRet,
+   benchmarkRet
+  };
  }
 
  if (typeof Chart !== 'undefined') {
- Chart.defaults.color = '#a0a0a0';
- Chart.defaults.borderColor = '#2a2a2a';
+  Chart.defaults.color = '#a0a0a0';
+  Chart.defaults.borderColor = '#2a2a2a';
  }
 
  let assetChart, savingsChart, returnChart;
 
  try {
- // 圖表 1
- const ctxAsset = document.getElementById('assetChart').getContext('2d');
- assetChart = new Chart(ctxAsset, {
- type: 'line',
- data: {
- labels: [],
- datasets: [
- { label: '自訂組合名目資產', data: [], borderColor: '#64b5f6', backgroundColor: 'rgba(100, 181, 246, 0.15)', fill: true, tension: 0.1 },
- { label: '累積投入總本金', data: [], borderColor: '#ffb74d', borderDash: [3, 3], fill: false, tension: 0.1 },
- { label: '實質購買力 (折現後)', data: [], borderColor: '#81c784', borderDash: [5, 5], fill: false, tension: 0.1 },
- { label: '對照組名目資產 (50/50)', data: [], borderColor: '#ba68c8', fill: false, tension: 0.1 }
- ]
- },
- options: {
- responsive: true,
- maintainAspectRatio: false,
- scales: {
- x: { title: { display: true, text: '儲蓄與投資年數' } },
- y: { title: { display: true, text: '資產總額 ($)' }, ticks: { callback: (v) => '$' + (v / 10000).toLocaleString() + '萬' } }
- }
- }
- });
+  // 圖表 1
+  const ctxAsset = document.getElementById('assetChart').getContext('2d');
+  assetChart = new Chart(ctxAsset, {
+   type: 'line',
+   data: {
+    labels: [],
+    datasets: [
+     { label: '自訂組合名目資產', data: [], borderColor: '#64b5f6', backgroundColor: 'rgba(100, 181, 246, 0.15)', fill: true, tension: 0.1 },
+     { label: '累積投入總本金', data: [], borderColor: '#ffb74d', borderDash: [3, 3], fill: false, tension: 0.1 },
+     { label: '實質購買力 (折現後)', data: [], borderColor: '#81c784', borderDash: [5, 5], fill: false, tension: 0.1 },
+     { label: '對照組名目資產 (50/50)', data: [], borderColor: '#ba68c8', fill: false, tension: 0.1 }
+    ]
+   },
+   options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+     x: { title: { display: true, text: '儲蓄與投資年數' } },
+     y: { title: { display: true, text: '資產總額 ($)' }, ticks: { callback: (v) => '$' + (v / 10000).toLocaleString() + '萬' } }
+    }
+   }
+  });
 
- // 圖表 2
- const ctxSavings = document.getElementById('savingsChart').getContext('2d');
- savingsChart = new Chart(ctxSavings, {
- type: 'line',
- data: {
- labels: [],
- datasets: [
- {
- label: '名目每月儲蓄額 ($)',
- data: [],
- borderColor: '#64b5f6',
- backgroundColor: 'rgba(100, 181, 246, 0.15)',
- fill: true,
- tension: 0.1,
- yAxisID: 'y'
- },
- {
- label: '實質每月儲蓄購買力 ($)',
- data: [],
- borderColor: '#81c784',
- borderDash: [5, 5],
- fill: false,
- tension: 0.1,
- yAxisID: 'y1'
- }
- ]
- },
- options: {
- responsive: true,
- maintainAspectRatio: false,
- scales: {
- x: { title: { display: true, text: '儲蓄與投資年數' } },
- y: {
- type: 'linear',
- display: true,
- position: 'left',
- title: { display: true, text: '名目金額 ($)', color: '#64b5f6' },
- ticks: { color: '#64b5f6', callback: (v) => '$' + Number(v).toLocaleString() }
- },
- y1: {
- type: 'linear',
- display: true,
- position: 'right',
- title: { display: true, text: '實質購買力 ($)', color: '#81c784' },
- ticks: { color: '#81c784', callback: (v) => '$' + Number(v).toLocaleString() },
- grid: { drawOnChartArea: false }
- }
- }
- }
- });
+  // 圖表 2
+  const ctxSavings = document.getElementById('savingsChart').getContext('2d');
+  savingsChart = new Chart(ctxSavings, {
+   type: 'line',
+   data: {
+    labels: [],
+    datasets: [
+     {
+      label: '名目每月儲蓄額 ($)',
+      data: [],
+      borderColor: '#64b5f6',
+      backgroundColor: 'rgba(100, 181, 246, 0.15)',
+      fill: true,
+      tension: 0.1,
+      yAxisID: 'y'
+     },
+     {
+      label: '實質每月儲蓄購買力 ($)',
+      data: [],
+      borderColor: '#81c784',
+      borderDash: [5, 5],
+      fill: false,
+      tension: 0.1,
+      yAxisID: 'y1'
+     }
+    ]
+   },
+   options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+     x: { title: { display: true, text: '儲蓄與投資年數' } },
+     y: {
+      type: 'linear',
+      display: true,
+      position: 'left',
+      title: { display: true, text: '名目金額 ($)', color: '#64b5f6' },
+      ticks: { color: '#64b5f6', callback: (v) => '$' + Number(v).toLocaleString() }
+     },
+     y1: {
+      type: 'linear',
+      display: true,
+      position: 'right',
+      title: { display: true, text: '實質購買力 ($)', color: '#81c784' },
+      ticks: { color: '#81c784', callback: (v) => '$' + Number(v).toLocaleString() },
+      grid: { drawOnChartArea: false }
+     }
+    }
+   }
+  });
 
- // 圖表 3
- const ctxReturn = document.getElementById('returnChart').getContext('2d');
- returnChart = new Chart(ctxReturn, {
- type: 'bar',
- data: {
- labels: ['自訂投資組合', '對照組 (50/50 股債)'],
- datasets: [{
- label: '年化名目回報率 (%)',
- data: [0, 0],
- backgroundColor: ['rgba(100, 181, 246, 0.7)', 'rgba(255, 183, 77, 0.7)'],
- borderColor: ['#64b5f6', '#ffb74d'],
- borderWidth: 1
- }]
- },
- options: {
- responsive: true,
- maintainAspectRatio: false,
- scales: {
- y: {
- title: { display: true, text: '年化回報率 (%)' },
- min: 0,
- max: 12,
- ticks: { callback: (v) => Number(v).toFixed(1) + '%' }
- }
- }
- }
- });
+  // 圖表 3
+  const ctxReturn = document.getElementById('returnChart').getContext('2d');
+  returnChart = new Chart(ctxReturn, {
+   type: 'bar',
+   data: {
+    labels: ['自訂投資組合', '對照組 (50/50 股債)'],
+    datasets: [{
+     label: '年化名目回報率 (%)',
+     data: [0, 0],
+     backgroundColor: ['rgba(100, 181, 246, 0.7)', 'rgba(255, 183, 77, 0.7)'],
+     borderColor: ['#64b5f6', '#ffb74d'],
+     borderWidth: 1
+    }]
+   },
+   options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+     y: {
+      title: { display: true, text: '年化回報率 (%)' },
+      min: 0,
+      max: 12,
+      ticks: { callback: (v) => Number(v).toFixed(1) + '%' }
+     }
+    }
+   }
+  });
  } catch (err) {
- console.error("初始化圖表失敗: ", err);
+  console.error("初始化圖表失敗: ", err);
  }
 
  function updateAll() {
- const p = getParams();
+  const p = getParams();
 
- setTxt('val_initial', formatCurrency(p.initial));
- setTxt('val_monthly', formatCurrency(p.monthly));
- setTxt('val_savings_growth', formatPercent(getVal('param_savings_growth', 3.0)));
- setTxt('val_stock_pct', getVal('param_stock_pct', 80) + '%');
- setTxt('val_stock_ret', formatPercent(getVal('param_stock_ret', 7.0)));
- setTxt('val_bond_ret', formatPercent(getVal('param_bond_ret', 4.0)));
- setTxt('val_total_inflation', formatPercent(getVal('param_total_inflation', 2.5)));
- setTxt('val_years', formatYears(getVal('param_years', 25)));
+  setTxt('val_initial', formatCurrency(p.initial));
+  setTxt('val_monthly', formatCurrency(p.monthly));
+  setTxt('val_savings_growth', formatPercent(getVal('param_savings_growth', 3.0)));
+  setTxt('val_stock_pct', getVal('param_stock_pct', 80) + '%');
+  setTxt('val_stock_ret', formatPercent(getVal('param_stock_ret', 7.0)));
+  setTxt('val_bond_ret', formatPercent(getVal('param_bond_ret', 4.0)));
+  setTxt('val_total_inflation', formatPercent(getVal('param_total_inflation', 2.5)));
+  setTxt('val_years', formatYears(getVal('param_years', 25)));
 
- const res = calculateData(p);
+  const res = calculateData(p);
 
- setTxt('lbl_final_nominal', `第 ${p.years} 年名義總資產 (名目)`);
- setTxt('lbl_final_real', `第 ${p.years} 年實質購買力 (今日實質購買力)`);
+  setTxt('lbl_final_nominal', `第 ${p.years} 年名義總資產 (名目)`);
+  setTxt('lbl_final_real', `第 ${p.years} 年實質購買力 (今日實質購買力)`);
 
- const finalPrincipal = res.totalPrincipalData[res.totalPrincipalData.length - 1];
- const finalNominal = res.customAssetData[res.customAssetData.length - 1];
- const finalReal = res.realAssetData[res.realAssetData.length - 1];
+  const finalPrincipal = res.totalPrincipalData[res.totalPrincipalData.length - 1];
+  const finalNominal = res.customAssetData[res.customAssetData.length - 1];
+  const finalReal = res.realAssetData[res.realAssetData.length - 1];
 
- const investmentGainNominal = finalNominal - finalPrincipal;
- const investmentGainReal = finalReal - finalPrincipal;
+  const investmentGainNominal = finalNominal - finalPrincipal;
+  const investmentGainReal = finalReal - finalPrincipal;
 
- setTxt('sum_total_principal', formatCurrency(finalPrincipal));
- setTxt('sum_final_nominal', formatCurrency(finalNominal));
- setTxt('sum_final_real', formatCurrency(finalReal));
- setTxt('sum_investment_gain_nominal', formatCurrency(investmentGainNominal));
- setTxt('sum_investment_gain_real', formatCurrency(investmentGainReal));
+  setTxt('sum_total_principal', formatCurrency(finalPrincipal));
+  setTxt('sum_final_nominal', formatCurrency(finalNominal));
+  setTxt('sum_final_real', formatCurrency(finalReal));
+  setTxt('sum_investment_gain_nominal', formatCurrency(investmentGainNominal));
+  setTxt('sum_investment_gain_real', formatCurrency(investmentGainReal));
 
- if (assetChart) {
- assetChart.data.labels = res.labels;
- assetChart.data.datasets[0].data = res.customAssetData;
- assetChart.data.datasets[1].data = res.totalPrincipalData;
- assetChart.data.datasets[2].data = res.realAssetData;
- assetChart.data.datasets[3].data = res.benchmarkAssetData;
- assetChart.update();
+  if (assetChart) {
+   assetChart.data.labels = res.labels;
+   assetChart.data.datasets[0].data = res.customAssetData;
+   assetChart.data.datasets[1].data = res.totalPrincipalData;
+   assetChart.data.datasets[2].data = res.realAssetData;
+   assetChart.data.datasets[3].data = res.benchmarkAssetData;
+   assetChart.update();
+  }
+
+  if (savingsChart) {
+   savingsChart.data.labels = res.labels;
+   savingsChart.data.datasets[0].data = res.monthlySavingsNominalData;
+   savingsChart.data.datasets[1].data = res.monthlySavingsRealData;
+   savingsChart.update();
+  }
+
+  if (returnChart) {
+   returnChart.data.datasets[0].data = [(res.portfolioRet * 100).toFixed(2), (res.benchmarkRet * 100).toFixed(2)];
+   returnChart.update();
+  }
  }
 
- if (savingsChart) {
- savingsChart.data.labels = res.labels;
- savingsChart.data.datasets[0].data = res.monthlySavingsNominalData;
- savingsChart.data.datasets[1].data = res.monthlySavingsRealData;
- savingsChart.update();
- }
-
- if (returnChart) {
- returnChart.data.datasets[0].data = [(res.portfolioRet * 100).toFixed(2), (res.benchmarkRet * 100).toFixed(2)];
- returnChart.update();
- }
- }
+ // 初始化時先載入本地儲存資料，再更新圖表
+ loadFromLocalStorage();
 
  const inputs = document.querySelectorAll('input[type="range"]');
  inputs.forEach(input => {
- input.addEventListener('input', updateAll);
- input.addEventListener('change', updateAll);
+  const handleInput = () => {
+   updateAll();
+   saveToLocalStorage();
+  };
+  input.addEventListener('input', handleInput);
+  input.addEventListener('change', handleInput);
  });
+
+ // 重置預設值按鈕事件
+ const resetBtn = document.getElementById('btn_reset_defaults');
+ if (resetBtn) {
+  resetBtn.addEventListener('click', () => {
+   Object.keys(defaultValues).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+     el.value = defaultValues[id];
+    }
+   });
+   try {
+    localStorage.removeItem(STORAGE_KEY);
+   } catch (e) {
+    console.warn("無法清除 localStorage:", e);
+   }
+   updateAll();
+  });
+ }
 
  updateAll();
  });
