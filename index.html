@@ -3,219 +3,237 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>長期儲蓄、退休資產、年金與現金流模擬器工具箱 | Wealth Accumulation & Retirement Simulators Portal</title>
+  <title>長期儲蓄、退休資產與現金流模擬器工具箱</title>
+  
   <style>
+    /* 全域與主題變數定義 */
     :root {
       --bg-color: #121212;
       --card-bg: #1e1e1e;
-      --border-color: #333333;
-      --accent-color: #64b5f6;
-      --accent-hover: #42a5f5;
+      --card-border: #2d2d2d;
       --text-main: #e0e0e0;
-      --text-muted: #a0a0a0;
-      --tag-bg: #2a2a2a;
+      --text-sub: #a0a0a0;
+      --accent-blue: #4ba3e3;
+      --badge-bg: #2a3844;
+      --badge-text: #64b5f6;
+      --btn-bg: #4aa3f0;
+      --btn-text: #000000;
+      --btn-hover: #3b82c4;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       background-color: var(--bg-color);
       color: var(--text-main);
-      margin: 0;
-      padding: 40px 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       line-height: 1.6;
-    }
-
-    .container {
-      max-width: 900px;
+      padding: 24px 16px;
+      max-width: 800px;
       margin: 0 auto;
     }
 
-    .header {
+    /* 頂部標題 Hero 區塊 */
+    .hero {
       text-align: center;
-      margin-bottom: 40px;
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 24px;
+      margin-bottom: 32px;
+      padding: 16px 0;
     }
 
-    .header h1 {
-      color: #ffffff;
-      font-size: 1.8rem;
-      margin: 0 0 8px 0;
+    .hero h1 {
+      font-size: 1.75rem;
       font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 12px;
+      line-height: 1.3;
     }
 
-    .header .subtitle-en {
-      color: var(--accent-color);
-      font-size: 1rem;
-      font-weight: 600;
-      margin: 0 0 12px 0;
-    }
-
-    .header p.description {
-      color: var(--text-muted);
+    .hero .subtitle {
       font-size: 0.9rem;
-      max-width: 720px;
-      margin: 0 auto;
-      line-height: 1.7;
+      color: var(--accent-blue);
+      margin-bottom: 16px;
+      word-break: break-word;
     }
 
+    .hero .description {
+      font-size: 0.95rem;
+      color: var(--text-sub);
+      text-align: justify;
+      text-align-last: left;
+    }
+
+    /* 卡片網格與卡片樣式 */
     .portal-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
 
     .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
       border-radius: 12px;
-      padding: 24px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
-    .card:hover {
-      transform: translateY(-4px);
-      border-color: var(--accent-color);
-      box-shadow: 0 8px 20px rgba(100, 181, 246, 0.15);
-    }
-
     .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
       margin-bottom: 12px;
     }
 
     .card-badge {
-      font-size: 0.75rem;
-      background: var(--tag-bg);
-      color: var(--accent-color);
+      display: inline-block;
+      background-color: var(--badge-bg);
+      color: var(--badge-text);
+      font-size: 0.8rem;
       padding: 4px 10px;
-      border-radius: 20px;
-      border: 1px solid #3d3d3d;
+      border-radius: 6px;
       font-weight: 600;
     }
 
     .card h2 {
-      font-size: 1.25rem;
+      font-size: 1.2rem;
       color: #ffffff;
-      margin: 0 0 12px 0;
+      margin-bottom: 10px;
       line-height: 1.4;
     }
 
     .card p {
-      color: var(--text-muted);
       font-size: 0.9rem;
-      margin: 0 0 20px 0;
-      flex-grow: 1;
+      color: var(--text-sub);
+      margin-bottom: 20px;
     }
 
+    /* 按鈕樣式 */
     .btn {
       display: block;
-      background: var(--accent-color);
-      color: #000000;
-      font-weight: 700;
-      text-decoration: none;
-      padding: 12px 20px;
-      border-radius: 8px;
+      width: 100%;
       text-align: center;
+      background-color: var(--btn-bg);
+      color: var(--btn-text);
+      text-decoration: none;
+      font-weight: 600;
+      padding: 12px 16px;
+      border-radius: 8px;
       transition: background-color 0.2s ease;
     }
 
     .btn:hover {
-      background: var(--accent-hover);
+      background-color: var(--btn-hover);
     }
 
+    /* 頁尾 Footer 樣式 */
     footer {
-      margin-top: 60px;
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--card-border);
       text-align: center;
-      border-top: 1px solid var(--border-color);
-      padding-top: 24px;
-      color: var(--text-muted);
       font-size: 0.85rem;
+      color: var(--text-sub);
     }
 
-    footer strong {
-      color: #ffffff;
+    footer p {
+      margin-bottom: 6px;
     }
 
-    footer .disclaimer {
-      font-size: 0.75rem;
-      color: #777777;
-      margin-top: 8px;
+    footer a {
+      color: var(--accent-blue);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
 
-<div class="container">
-
-  <header class="header">
-    <h1>長期儲蓄、退休資產、年金與現金流模擬器工具箱</h1>
-    <div class="subtitle-en">Wealth Accumulation, Asset Withdrawal & Cash Flow Simulators Portal</div>
+  <!-- 頂部標題區塊 -->
+  <header class="hero">
+    <h1>長期儲蓄、退休資產與現金流模擬器工具箱</h1>
+    <p class="subtitle">Wealth Accumulation, Asset Withdrawal & Cash Flow Simulators Portal</p>
     <p class="description">
-      歡迎使用互動式個人財務規劃工具箱。本站整合「退休前資產積累」、「通用提領模型」與「香港在地化年金及長生津」動態模擬，協助您評估定期定額儲蓄、資產配置、通脹率與政府補貼對長期名目資產及實質購買力的動態影響。
+      歡迎使用互動式個人財務規劃工具箱。本站整合「退休前資產積累」、「通用提領模型」、「固定收益債券梯」與「香港在地化年金及長生津」動態模擬，協助您評估定期定額儲蓄、資產配置、通脹率與政府補貼對長期名目資產及實質購買力的動態影響。
+      <br><br>
+      <strong>完全隱私安全：</strong> 所有計算均在使用者瀏覽器本地執行，絕不上傳任何個人財務數據。
     </p>
   </header>
 
-  <main class="portal-grid">
+  <!-- 卡片網格容器 -->
+  <main class="portal-grid" id="portal-container"></main>
 
-    <!-- 工具 1：長期儲蓄與實質購買力積累模擬器 -->
-    <article class="card">
-      <div>
-        <div class="card-header">
-          <span class="card-badge">資產積累模型</span>
-        </div>
-        <h2>1. 長期儲蓄與實質購買力積累模擬器</h2>
-        <p>
-          模擬退休前資產積累過程。評估定期定額增長、股債投資組合對名目總資產與「實質購買力（折現後）」的累積影響。
-        </p>
-      </div>
-      <a href="Wealth_Accum_Simulator.html" class="btn">開啟模擬器 1 →</a>
-    </article>
-
-    <!-- 工具 2：退休資產與實質購買力提領模擬器 -->
-    <article class="card">
-      <div>
-        <div class="card-header">
-          <span class="card-badge">通用財務模型</span>
-        </div>
-        <h2>2. 退休資產與實質購買力提領模擬器</h2>
-        <p>
-          適合通用退休資產規劃。評估股票與債券動態配置，在考慮預期通脹與購買力折損下，觀察提領金額演變與 4% 法則安全邊界。
-        </p>
-      </div>
-      <a href="asset_withdrawal_simulator_v0.1.html" class="btn">開啟模擬器 2 →</a>
-    </article>
-
-    <!-- 工具 3：香港年金 + 長生津與實質購買力模擬器 -->
-    <article class="card">
-      <div>
-        <div class="card-header">
-          <span class="card-badge">香港專用政策</span>
-        </div>
-        <h2>3. 香港年金 + 長生津與實質購買力模擬器 (2026)</h2>
-        <p>
-          專為香港地區規劃設計。整合香港年金（HKMC）、社署長者生活津貼審查（OALA）與私人股債收益，動態計算每月實質現金流與資格變化。
-        </p>
-      </div>
-      <a href="hkmc_oala_simulator_2026_v0.1.html" class="btn">開啟模擬器 3 →</a>
-    </article>
-
-  </main>
-
+  <!-- 頁尾區塊 -->
   <footer>
-    <p>Created by <strong>Anthony c t LEE</strong>, Sep 2026.</p>
-    <p class="disclaimer">
-      Disclaimer: These simulators are for educational and informational purposes only and do not constitute financial advice.
+    <p>Created by Anthony c t LEE, Sep 2026.</p>
+    <p>
+      有任何意見或建議？歡迎前往 
+      <a href="https://github.com/mbike-cat/retirement-simulators/issues" target="_blank" rel="noopener noreferrer">GitHub Issues 留下訊息</a>
     </p>
+    <p class="disclaimer">Disclaimer: This simulator is for educational and informational purposes only and does not constitute financial advice.</p>
   </footer>
 
-</div>
+  <script>
+    // 4 個模擬器的資料設定
+    const simulators = [
+      {
+        badge: "資產積累模型",
+        title: "1. 長期儲蓄與實質購買力積累模擬器",
+        description: "模擬退休前資產積累過程。評估定期定額增長、股債投資組合對名目總資產與「實質購買力（折現後）」的累積影響，並支援本地參數記憶。",
+        link: "Wealth_Accum_Simulator.html",
+        btnText: "開啟模擬器 1 →"
+      },
+      {
+        badge: "通用財務模型",
+        title: "2. 退休資產與實質購買力提領模擬器",
+        description: "適合通用退休資產規劃。評估股票與債券動態配置，在考慮預期通脹與購買力折損下，觀察提領金額演變與 4% 法則安全邊界。",
+        link: "asset_withdrawal_simulator_v0.1.html",
+        btnText: "開啟模擬器 2 →"
+      },
+      {
+        badge: "進階固定收益策略",
+        title: "3. 滾動債券梯與固定收益現金流模擬器",
+        description: "專為鎖定固定現金流設計。模擬透過美國國債梯（Bond Laddering）到期劃撥與股債提領順序，觀察退休期間資金池的防禦力與提領穩定度。",
+        link: "bond_ladder_rebalance_simulator_v0.1.html",
+        btnText: "開啟模擬器 3 →"
+      },
+      {
+        badge: "香港專用政策",
+        title: "4. 香港年金 + 長生津與實質購買力模擬器 (2026)",
+        description: "專為香港地區規劃設計。整合香港年金（HKMC）、社署長者生活津貼審查（OALA）與私人股債收益，動態計算每月實質現金流與資格變化。",
+        link: "hkmc_oala_simulator_2026_v0.1.html",
+        btnText: "開啟模擬器 4 →"
+      }
+    ];
 
+    // 動態渲染卡片
+    function renderPortalCards() {
+      const container = document.getElementById('portal-container');
+      if (!container) return;
+
+      const htmlContent = simulators.map(item => `
+        <article class="card">
+          <div>
+            <div class="card-header">
+              <span class="card-badge">${item.badge}</span>
+            </div>
+            <h2>${item.title}</h2>
+            <p>${item.description}</p>
+          </div>
+          <a href="${item.link}" class="btn">${item.btnText}</a>
+        </article>
+      `).join('');
+
+      container.innerHTML = htmlContent;
+    }
+
+    document.addEventListener('DOMContentLoaded', renderPortalCards);
+  </script>
 </body>
 </html>
