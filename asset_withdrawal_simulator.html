@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>退休資產與實質購買力提領模擬器 v0.22</title>
+  <title>退休資產與實質購買力提領模擬器 v0.23</title>
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -31,8 +31,12 @@
       --status-alert: #e57373;
 
       --title-color: #ffffff;
-      --btn-reset-bg: #1e88e5;
-      --btn-reset-hover: #1565c0;
+      
+      --btn-reset-bg: #2a2a2a;
+      --btn-reset-border: #444444;
+      --btn-reset-text: #e0e0e0;
+      --btn-reset-hover: #353535;
+      --btn-reset-hover-border: #666666;
     }
 
     /* 自動切換：當使用者系統偏好亮色模式時 (Light Mode) */
@@ -60,8 +64,12 @@
         --status-alert: #dc3545;
 
         --title-color: #212529;
-        --btn-reset-bg: #0d6efd;
-        --btn-reset-hover: #0b5ed7;
+        
+        --btn-reset-bg: #ffffff;
+        --btn-reset-border: #ced4da;
+        --btn-reset-text: #495057;
+        --btn-reset-hover: #f8f9fa;
+        --btn-reset-hover-border: #adb5bd;
       }
     }
 
@@ -86,18 +94,26 @@
     }
 
     .nav-back {
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
 
+    /* 返回按鈕：四方框樣式，字體改為淺藍色 */
     .nav-back a {
+      display: inline-block;
+      background-color: var(--control-bg);
       color: var(--chart-custom-nominal);
+      border: 1px solid var(--control-border);
+      border-radius: 6px;
+      padding: 6px 12px;
       text-decoration: none;
       font-size: 0.85rem;
       font-weight: 600;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
     }
 
     .nav-back a:hover {
-      text-decoration: underline;
+      background-color: var(--btn-reset-hover);
+      border-color: var(--btn-reset-hover-border);
     }
 
     .app-header {
@@ -118,7 +134,7 @@
     .app-title-en {
       font-size: 0.95rem;
       font-weight: 600;
-      color: var(--chart-custom-nominal);
+      color: var(--text-muted);
       margin: 0 0 8px 0;
       line-height: 1.3;
     }
@@ -245,18 +261,19 @@
 
     .btn-reset {
       background-color: var(--btn-reset-bg);
-      color: #ffffff;
-      border: none;
+      color: var(--chart-custom-nominal);
+      border: 1px solid var(--btn-reset-border);
       border-radius: 6px;
       padding: 5px 12px;
       font-size: 0.8rem;
       font-weight: 600;
       cursor: pointer;
-      transition: background-color 0.2s ease;
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     }
 
     .btn-reset:hover {
       background-color: var(--btn-reset-hover);
+      border-color: var(--btn-reset-hover-border);
     }
 
     .slider-grid {
@@ -348,7 +365,7 @@
   <div class="app-header">
     <h1 class="app-title-zh">退休資產與實質購買力提領模擬器</h1>
     <div class="app-title-en">Retirement & Purchasing Power Simulator</div>
-    <p class="app-subtitle">版本 v0.22</p>
+    <p class="app-subtitle">版本 v0.23</p>
   </div>
 
   <!-- 1. 參數調整與設定 (置頂) -->
@@ -508,9 +525,8 @@
 </div>
 
 <script>
-  const STORAGE_KEY = 'withdrawal_simulator_config_v022';
+  const STORAGE_KEY = 'withdrawal_simulator_config_v023';
 
-  // 預設參數設定
   const defaultParams = {
     param_initial_step: "40",
     param_monthly_step: "20",
@@ -528,7 +544,6 @@
     const formatPercent = (val) => Number(val).toFixed(2) + '%';
     const formatYears = (val) => val + ' 年';
 
-    // 轉換函數：最初資產 (0 ~ 1,000 萬)
     function getInitialAssetFromStep(step) {
       step = Number(step);
       if (step === 0) return 0;
@@ -541,7 +556,6 @@
       }
     }
 
-    // 轉換函數：首年每月提領額 (0 ~ 10 萬)
     function getMonthlyWithdrawalFromStep(step) {
       step = Number(step);
       if (step === 0) return 0;
@@ -554,7 +568,6 @@
       }
     }
 
-    // 轉換函數：其他每月總入息 (0 ~ 10 萬)
     function getOtherIncomeFromStep(step) {
       step = Number(step);
       if (step === 0) return 0;
@@ -797,7 +810,6 @@
       setTxt('val_total_inflation', formatPercent(getVal('param_total_inflation', 4.5)));
       setTxt('val_years', formatYears(getVal('param_years', 30)));
 
-      // 動態更新說明提示文字
       const infVal = getVal('param_total_inflation', 4.5);
       const ratioVal = getVal('param_inflation_adj_pct', 80);
       const resultantVal = (infVal * (ratioVal / 100)).toFixed(2);
@@ -805,7 +817,6 @@
 
       const res = calculateData(p);
 
-      // 更新摘要資訊
       const initialCapital = p.initial;
       setTxt('sum_sustain_years', res.ranOut ? `${res.sustainYears} 年` : `${p.years}+ 年`);
       setTxt('lbl_final_nominal', `第 ${p.years} 年名義剩餘資產`);
@@ -861,7 +872,6 @@
       }
     }
 
-    // 載入當前快取設定
     loadFromLocalStorage();
 
     const inputs = document.querySelectorAll('input[type="range"]');
