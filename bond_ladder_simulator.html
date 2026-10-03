@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>滾動債券梯與固定收益現金流模擬器 v0.2</title>
+  <title>滾動債券梯與固定收益現金流模擬器 v0.3</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
@@ -357,14 +357,17 @@
 
 <div class="container">
 
-  <div class="top-nav">
-    <a href="index.html" class="back-btn">← 返回工具箱首頁</a>
+  <!-- 頂部按鈕列（左：返回，右：FAQ） -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+    <a href="index.html" class="back-btn" style="background-color: var(--btn-reset-bg); color: #ffffff; text-decoration: none; font-size: 0.82rem; font-weight: 600; padding: 6px 12px; border-radius: 6px; display: inline-flex; align-items: center;">← 返回工具箱首頁</a>
+    <a href="bls_faq.html" style="background-color: var(--btn-reset-bg); color: #ffffff; text-decoration: none; font-size: 0.82rem; font-weight: 600; padding: 6px 12px; border-radius: 6px; display: inline-flex; align-items: center;">📖 常見問題 (FAQ)</a>
   </div>
 
-  <div class="app-header">
-    <h1 class="app-title-zh">滾動債券梯與固定收益現金流模擬器</h1>
-    <div class="app-subtitle-en">Dynamic Bond Ladder & Fixed Income Cash Flow Simulator</div>
-    <p class="app-subtitle">版本 v0.2 - 長天期債券採「動態梯隊末端延伸」精密配置邏輯</p>
+  <!-- 獨立置中的主標題區 -->
+  <div class="app-header" style="text-align: center; margin-bottom: 24px; border-bottom: 2px solid var(--border-color); padding-bottom: 16px;">
+    <h1 class="app-title-zh" style="font-size: 1.40rem; font-weight: 700; color: var(--app-title-color); margin: 0 0 4px 0;">滾動債券梯與固定收益現金流模擬器</h1>
+    <div class="app-subtitle-en" style="font-size: 0.82rem; color: var(--text-muted); margin: 0 0 6px 0;">Dynamic Bond Ladder & Fixed Income Cash Flow Simulator</div>
+    <p class="app-subtitle" style="font-size: 0.82rem; color: var(--text-muted); margin: 0;">版本 v0.3 - 已套用嚴格淨開支需求法則 (僅扣除債息與保證收入)</p>
   </div>
 
   <!-- 1. 基礎參數設定 -->
@@ -397,7 +400,7 @@
           <input type="checkbox" id="param_enable_buffer" checked>
           <span>啟用獨立短期緩衝池 (固定 6 個月開支)</span>
         </label>
-        <div class="sub-hint">獨立於長天期債券場，配置 6 個月期 T-bills 作為流動儲備，對接日常開支，提升安全性。</div>
+        <div class="sub-hint">獨立於長天期債券場，配置 6 個月期 T-bills 作為流動儲備，對接日常開支，吸收初期本金空窗期。</div>
       </div>
 
       <div class="control-group">
@@ -408,9 +411,10 @@
         <input type="range" id="param_monthly_step" min="0" max="100" step="1" value="32">
       </div>
 
+      <!-- 更新的欄位：具法律保證的收入 -->
       <div class="control-group">
         <div class="control-label">
-          <span>其他每月總入息 (兼職/年金等)</span>
+          <span>每月具法律保證的收入 (年金、樓宇/保單逆按揭等)</span>
           <span class="value-display" id="val_other_income">$2,000</span>
         </div>
         <input type="range" id="param_other_income_step" min="0" max="68" step="1" value="4">
@@ -422,7 +426,7 @@
           <span class="value-display" id="val_ladder_years">5 年</span>
         </div>
         <input type="range" id="param_ladder_years" min="1" max="5" step="1" value="5">
-        <div class="sub-hint">1年梯相距1年0個月、2年梯相距1年3個月、3年梯相距1年2個月、4/5年梯相距1年1個月。</div>
+        <div class="sub-hint">系統採用動態梯期數與月份間隔運算，精確錯開配息日，達成高頻現金流入。</div>
       </div>
 
       <div class="control-group">
@@ -431,14 +435,7 @@
           <span class="value-display" id="val_stock_ret">6.00%</span>
         </div>
         <input type="range" id="param_stock_ret" min="0.00" max="15.00" step="0.25" value="6.00">
-      </div>
-
-      <div class="control-group">
-        <div class="control-label">
-          <span>股票年派息率 (%)</span>
-          <span class="value-display" id="val_stock_div">1.00%</span>
-        </div>
-        <input type="range" id="param_stock_div" min="0.00" max="8.00" step="0.25" value="1.00">
+        <div class="sub-hint">註：系統預設將股票股息與資本利得全數滾動再投資，不參與生活現金流抵扣。</div>
       </div>
 
       <div class="control-group">
@@ -503,14 +500,14 @@
 
   <!-- 3. 債券梯與長天期配置分析 -->
   <div class="card">
-    <div class="card-title" id="ladder_analysis_title">動態債券梯建構與配置安全度檢查 (5 年梯模式)</div>
+    <div class="card-title" id="ladder_analysis_title">預計淨開支需求分析 (已扣除債券利息、具法律保證的收入)</div>
     <table class="data-table">
       <thead>
         <tr>
-          <th>開支/長天期標籤</th>
-          <th>預計淨開支需求 (已扣除其他入息)</th>
-          <th>預估利息抵扣 (股息+債息)</th>
-          <th>需要購入的債券金額</th>
+          <th>開支與期間標籤</th>
+          <th>期間總開支需求</th>
+          <th>扣除: 保證收入與債券利息</th>
+          <th>淨開支缺口 (需配置債券)</th>
           <th>處置與覆蓋狀態</th>
         </tr>
       </thead>
@@ -520,25 +517,34 @@
     <div class="highlight-box" id="rebalance_decision_box"></div>
   </div>
 
-  <!-- 4. 圖表 1 -->
+  <!-- 圖表 1 - 本息分離現金流圖 -->
   <div class="card">
-    <div class="card-title">圖表 1：長期資產總額走勢 (名目 vs 實質購買力)</div>
+    <div class="card-title">圖表 1：月度債券固定收益現金流分析 (前 60 個月)</div>
+    <div class="sub-hint" style="margin-left: 14px; margin-bottom: 8px;">展示高頻錯開配息防禦效果。</div>
+    <div class="chart-container">
+      <canvas id="cashFlowChart"></canvas>
+    </div>
+  </div>
+
+  <!-- 4. 圖表 2 -->
+  <div class="card">
+    <div class="card-title">圖表 2：長期資產總額走勢 (名目 vs 實質購買力)</div>
     <div class="chart-container">
       <canvas id="assetChart"></canvas>
     </div>
   </div>
 
-  <!-- 5. 圖表 2 -->
+  <!-- 5. 圖表 3 -->
   <div class="card">
-    <div class="card-title">圖表 2：每年提領金額 (名目 vs 實質購買力)</div>
+    <div class="card-title">圖表 3：每年需變現本金缺口 (名目 vs 實質購買力)</div>
     <div class="chart-container">
       <canvas id="withdrawalChart"></canvas>
     </div>
   </div>
 
-  <!-- 6. 圖表 3 -->
+  <!-- 6. 圖表 4 -->
   <div class="card">
-    <div class="card-title">圖表 3：年度提領率 (%) 走勢 (對比當年本金)</div>
+    <div class="card-title">圖表 4：年度本金變現率 (%) 走勢 (對比當年本金)</div>
     <div class="chart-container">
       <canvas id="rateChart"></canvas>
     </div>
@@ -552,8 +558,9 @@
         <thead>
           <tr>
             <th>年份</th>
-            <th>當年淨提領開支</th>
-            <th>全年總利息抵扣</th>
+            <th>當年總開支</th>
+            <th>抵扣 (保證收入+債息)</th>
+            <th>淨變現(提領)缺口</th>
             <th>名目剩餘資產</th>
             <th>實質剩餘購買力</th>
             <th>實際股票佔比 (%)</th>
@@ -576,7 +583,7 @@
     const formatCurrency = (val) => '$' + Math.round(val).toLocaleString('en-US');
     const formatPercent = (val) => Number(val).toFixed(2) + '%';
 
-    const STORAGE_KEY = 'bond_ladder_simulator_params_v0.2';
+    const STORAGE_KEY = 'bond_ladder_simulator_params_v0.3';
 
     const defaultParams = {
       param_initial_step: '50',
@@ -586,7 +593,6 @@
       param_other_income_step: '4',
       param_ladder_years: '5',
       param_stock_ret: '6.00',
-      param_stock_div: '1.00',
       param_bond_ret: '4.00',
       param_total_inflation: '3.00',
       param_inflation_adj: '80',
@@ -651,7 +657,7 @@
       } catch (e) {}
     }
 
-    let assetChart, withdrawalChart, rateChart;
+    let assetChart, withdrawalChart, rateChart, cashFlowChart;
 
     function runSimulation() {
       const initialStep = getVal('param_initial_step', 50);
@@ -665,7 +671,6 @@
       const enableBuffer = document.getElementById('param_enable_buffer') ? document.getElementById('param_enable_buffer').checked : false;
       const ladderYears = parseInt(getVal('param_ladder_years', 5), 10);
       const stockRet = getVal('param_stock_ret', 6) / 100;
-      const stockDiv = getVal('param_stock_div', 1) / 100;
       const bondRet = getVal('param_bond_ret', 4) / 100;
       const totalInflation = getVal('param_total_inflation', 3) / 100;
       const inflationAdjRate = getVal('param_inflation_adj', 80) / 100;
@@ -679,13 +684,12 @@
       setTxt('val_other_income', formatCurrency(otherIncome));
       setTxt('val_ladder_years', ladderYears + ' 年');
       setTxt('val_stock_ret', formatPercent(stockRet * 100));
-      setTxt('val_stock_div', formatPercent(stockDiv * 100));
       setTxt('val_bond_ret', formatPercent(bondRet * 100));
       setTxt('val_total_inflation', formatPercent(totalInflation * 100));
       setTxt('val_inflation_adj', (inflationAdjRate * 100).toFixed(0) + '%');
       setTxt('val_years', years + ' 年');
 
-      setTxt('ladder_analysis_title', '動態債券梯建構與配置安全度檢查 (' + ladderYears + ' 年梯模式)');
+      setTxt('ladder_analysis_title', '預計淨開支需求分析 (' + ladderYears + ' 年梯模式，已扣除債息與保證收入)');
 
       const baseAnnualExpense = monthly * 12;
       const baseAnnualOtherIncome = otherIncome * 12;
@@ -702,7 +706,12 @@
       let yearlyNetExpenses = [];
 
       if (enableBuffer) {
-        const bufferNeed = monthly * 6;
+        // 短期緩衝池需求 = 開支 - 保證收入 - 債券利息(6個月預估)
+        const bufferGross = monthly * 6;
+        const bufferIncome = otherIncome * 6;
+        const bufferBondInt = (totalBondValTarget * bondRet) * (6 / 12);
+        const bufferNeed = Math.max(0, bufferGross - bufferIncome - bufferBondInt);
+        
         totalLadderRequired += bufferNeed;
 
         let bufferActionText = '';
@@ -712,52 +721,63 @@
         } else {
           shortFallOccurred = true;
           if (!shortFallLabel) shortFallLabel = '獨立短期緩衝池';
-          bufferActionText = '<span class="badge badge-alert">⚠️️ 債券額度不足 (無法覆蓋)</span>';
+          bufferActionText = '<span class="badge badge-alert">⚠ 債券額度不足 (無法覆蓋)</span>';
         }
 
         const trBuffer = document.createElement('tr');
         trBuffer.innerHTML = '<td><strong>獨立短期緩衝池 (6個月)</strong></td>' +
-          '<td>' + formatCurrency(bufferNeed) + ' <small style="color:var(--text-muted);">(首年淨開支 6 個月)</small></td>' +
-          '<td>-</td>' +
+          '<td>' + formatCurrency(bufferGross) + ' <small style="color:var(--text-muted);">(首年 6 個月)</small></td>' +
+          '<td>' + formatCurrency(bufferIncome + bufferBondInt) + ' <small style="color:var(--text-muted);">(保證收入+債息)</small></td>' +
           '<td><strong>' + formatCurrency(bufferNeed) + '</strong></td>' +
           '<td>' + bufferActionText + '</td>';
         ladderTbody.appendChild(trBuffer);
       }
 
-      let intervalMonths = 13;
-      if (ladderYears === 1) intervalMonths = 12;
-      else if (ladderYears === 2) intervalMonths = 15;
-      else if (ladderYears === 3) intervalMonths = 14;
-      else if (ladderYears === 4 || ladderYears === 5) intervalMonths = 13;
-
+      let rungMaturities = [];
+      let rungPrincipals = [];
+      let lastLadderMonthsTotal = 0;
       const baseYear = 2026;
       const baseMonth = 10;
-      let lastLadderMonthsTotal = (baseYear * 12 + baseMonth - 1);
+      lastLadderMonthsTotal = (baseYear * 12 + baseMonth - 1);
 
       for (let i = 1; i <= ladderYears; i++) {
-        const rungMonths = intervalMonths;
+        let exactMonths;
+        if (ladderYears === 1) {
+          exactMonths = 12;
+        } else {
+          const baseSpan = 12;
+          const extraSpan = 6 / ladderYears;
+          exactMonths = (baseSpan + extraSpan) * i;
+        }
+
+        const alignedMonths = Math.round(exactMonths * 2) / 2;
+        const prevAligned = i === 1 ? 0 : rungMaturities[i - 2];
+        const rungMonths = Math.max(1, alignedMonths - prevAligned);
+
+        rungMaturities.push(alignedMonths);
+
+        // 使用嚴格淨額計算法 (不含股票利息)
         const grossExpense = (monthly * rungMonths) * Math.pow(1 + effectiveInflation, i - 1);
         const currOtherInc = (otherIncome * rungMonths) * Math.pow(1 + effectiveInflation, i - 1);
-        const netExpenseNeeded = Math.max(0, grossExpense - currOtherInc);
-        yearlyNetExpenses.push(netExpenseNeeded / (rungMonths / 12));
+        const periodBondInterest = (totalBondValTarget * bondRet) * (rungMonths / 12);
+        const totalDeductions = currOtherInc + periodBondInterest;
 
-        const estStockDivIncome = targetStockVal * stockDiv * Math.pow(1 + effectiveInflation, i - 1);
-        const estBondInterestIncome = totalBondValTarget * bondRet * Math.pow(1 + effectiveInflation, i - 1);
-        const estTotalInterest = (estStockDivIncome + estBondInterestIncome) * (rungMonths / 12);
-
-        const netGap = Math.max(0, netExpenseNeeded - estTotalInterest);
+        const netGap = Math.max(0, grossExpense - totalDeductions);
         totalLadderRequired += netGap;
+        rungPrincipals.push(netGap);
+        yearlyNetExpenses.push(netGap / (rungMonths / 12));
 
-        lastLadderMonthsTotal = (baseYear * 12 + baseMonth - 1) + (i * intervalMonths);
+        lastLadderMonthsTotal = (baseYear * 12 + baseMonth - 1) + alignedMonths;
         const targetYearFull = Math.floor(lastLadderMonthsTotal / 12);
-        const targetMonthNum = (lastLadderMonthsTotal % 12) + 1;
+        const isHalfMonth = !Number.isInteger(alignedMonths);
+        const targetMonthNum = Math.floor((lastLadderMonthsTotal % 12) + 1);
         const targetYearShort = targetYearFull % 100;
-        const dateStr = targetYearShort + '年' + String(targetMonthNum).padStart(2, '0') + '月';
+        const dateStr = targetYearShort + '年' + String(targetMonthNum).padStart(2, '0') + '月' + (isHalfMonth ? '中' : '底');
 
         let actionText = '';
         if (remainingBondPool >= netGap) {
           remainingBondPool -= netGap;
-          actionText = '<span class="badge badge-ok">購入 ' + dateStr + '國債</span>';
+          actionText = '<span class="badge badge-ok">購入 ' + dateStr + '到期國債</span>';
         } else {
           if (!shortFallOccurred) {
             shortFallOccurred = true;
@@ -767,9 +787,9 @@
         }
 
         const tr = document.createElement('tr');
-        tr.innerHTML = '<td>核心梯 第 ' + i + ' 年需求 (' + rungMonths + '個月)</td>' +
-          '<td>' + formatCurrency(netExpenseNeeded) + ' <small style="color:var(--text-muted);">(總開支 ' + formatCurrency(grossExpense) + ' - 入息 ' + formatCurrency(currOtherInc) + ')</small></td>' +
-          '<td>' + formatCurrency(estTotalInterest) + '</td>' +
+        tr.innerHTML = '<td>核心梯 第 ' + i + ' 年需求 (' + rungMonths.toFixed(1) + '個月)</td>' +
+          '<td>' + formatCurrency(grossExpense) + '</td>' +
+          '<td>' + formatCurrency(totalDeductions) + ' <small style="color:var(--text-muted);">(保證收入 ' + formatCurrency(currOtherInc) + ' + 債息 ' + formatCurrency(periodBondInterest) + ')</small></td>' +
           '<td><strong>' + formatCurrency(netGap) + '</strong></td>' +
           '<td>' + actionText + '</td>';
         ladderTbody.appendChild(tr);
@@ -777,37 +797,23 @@
 
       if (!shortFallOccurred && remainingBondPool > 0) {
         const trLong = document.createElement('tr');
-        if (ladderYears === 5) {
-          const longTotalMonths = lastLadderMonthsTotal + 120 + 1;
-          const longYearFull = Math.floor(longTotalMonths / 12);
-          const longMonthNum = (longTotalMonths % 12) + 1;
-          const longYearShort = longYearFull % 100;
-          const longDateStr = longYearShort + '年' + String(longMonthNum).padStart(2, '0') + '月';
+        const avgYearlyNeed = yearlyNetExpenses.length > 0 ? (yearlyNetExpenses.reduce((a, b) => a + b, 0) / yearlyNetExpenses.length) : baseAnnualExpense;
+        const extraYearsPossible = avgYearlyNeed > 0 ? (remainingBondPool / avgYearlyNeed) : 99;
+        const additionalYearsInt = Math.floor(extraYearsPossible);
+        const suggestedNewYears = Math.min(5, ladderYears + additionalYearsInt);
 
-          trLong.innerHTML = '<td><strong>長天期債券延伸配置</strong></td>' +
+        if (ladderYears >= 5 || additionalYearsInt < 1) {
+          trLong.innerHTML = '<td><strong>剩餘債券預算配置建議</strong></td>' +
             '<td>-</td>' +
             '<td>-</td>' +
             '<td><strong>' + formatCurrency(remainingBondPool) + '</strong></td>' +
-            '<td><span class="badge badge-ok">全額投入接續梯隊末端之 10年長債 (到期日：' + longDateStr + ')</span></td>';
+            '<td><span class="badge badge-ok">餘額約可多涵蓋 ' + extraYearsPossible.toFixed(1) + ' 年缺口，配置已臻完善。</span></td>';
         } else {
-          const avgYearlyNeed = yearlyNetExpenses.length > 0 ? (yearlyNetExpenses.reduce((a, b) => a + b, 0) / yearlyNetExpenses.length) : baseAnnualExpense;
-          const extraYearsPossible = remainingBondPool / avgYearlyNeed;
-          const additionalYearsInt = Math.floor(extraYearsPossible);
-          const suggestedNewYears = Math.min(5, ladderYears + additionalYearsInt);
-
-          if (ladderYears >= 5 || additionalYearsInt < 1) {
-            trLong.innerHTML = '<td><strong>剩餘債券預算配置建議</strong></td>' +
-              '<td>-</td>' +
-              '<td>-</td>' +
-              '<td><strong>' + formatCurrency(remainingBondPool) + '</strong></td>' +
-              '<td><span class="badge badge-ok">餘額約可多涵蓋 ' + extraYearsPossible.toFixed(1) + ' 年需求，現有梯隊配置已臻完善，餘額作為流動緩衝。</span></td>';
-          } else {
-            trLong.innerHTML = '<td><strong>剩餘債券預算配置建議</strong></td>' +
-              '<td>-</td>' +
-              '<td>-</td>' +
-              '<td><strong>' + formatCurrency(remainingBondPool) + '</strong></td>' +
-              '<td><span class="badge badge-warn">餘額約可多涵蓋 ' + extraYearsPossible.toFixed(1) + ' 年需求，建議將動態債券梯年期由 ' + ladderYears + ' 年增加至 ' + suggestedNewYears + ' 年</span></td>';
-          }
+          trLong.innerHTML = '<td><strong>剩餘債券預算配置建議</strong></td>' +
+            '<td>-</td>' +
+            '<td>-</td>' +
+            '<td><strong>' + formatCurrency(remainingBondPool) + '</strong></td>' +
+            '<td><span class="badge badge-warn">餘額約可多涵蓋 ' + extraYearsPossible.toFixed(1) + ' 年缺口，建議梯期增加至 ' + suggestedNewYears + ' 年</span></td>';
         }
         ladderTbody.appendChild(trLong);
       }
@@ -816,18 +822,77 @@
       if (shortFallOccurred) {
         decisionBox.className = 'highlight-box highlight-box-alert';
         decisionBox.innerHTML = '<strong>🚨 債券配置警告：股票比例過高，安全梯無法建滿！</strong><br>' +
-          '1. 當前債券總額為 <strong>' + formatCurrency(totalBondValTarget) + '</strong> (' + ((1 - stockPctTarget) * 100).toFixed(0) + '%)，建構 ' + ladderYears + ' 年梯' + (enableBuffer ? ' (含緩衝池)' : '') + '共需 <strong>' + formatCurrency(totalLadderRequired) + '</strong>。<br>' +
-          '2. 資金在 <strong>' + shortFallLabel + '</strong> 出現缺口，無法完全覆蓋安全開支。<br>' +
-          '3. <strong>建議處置方案：</strong> 請調低「目標股票配置比例 %」（即提高債券比例），確保安全梯與緩衝池能被 100% 覆蓋。';
+          '1. 當前債券總額為 <strong>' + formatCurrency(totalBondValTarget) + '</strong>，建構 ' + ladderYears + ' 年梯共需淨變現 <strong>' + formatCurrency(totalLadderRequired) + '</strong>。<br>' +
+          '2. 資金在 <strong>' + shortFallLabel + '</strong> 出現缺口。<br>' +
+          '3. <strong>建議處置方案：</strong> 請調低股票比例以確保安全梯能被 100% 覆蓋。';
       } else {
         decisionBox.className = 'highlight-box';
-        decisionBox.innerHTML = '💡 債券梯與長天期配置分析：<br>' +
-          '1. 目標債券總配置額： ' + formatCurrency(totalBondValTarget) + ' (' + ((1 - stockPctTarget) * 100).toFixed(2) + '%)。<br>' +
-          '2. ' + ladderYears + ' 年動態債券梯： 各年份需求已根據 ' + intervalMonths + ' 個月等精確間距完成建構與對接。<br>' +
-          '3. 資本與利息抵扣： 預期股息與債息已實作滾動扣除。<br>' +
-          '4. 長債延伸： 剩餘長天期資金已成功配置於末端接續梯隊。';
+        decisionBox.innerHTML = '💡 現金流配置與安全度分析：<br>' +
+          '1. 已執行嚴格淨開支測試：日常開支<strong>僅由「保證收入與債券利息」</strong>抵扣，完全排除股市波動影響。<br>' +
+          '2. ' + ladderYears + ' 年動態債券梯： 針對「淨變現缺口」準備對應本金，正確錯開到期日。<br>' +
+          '3. 股票資產增長： 系統已設定將預期股票收益(含股息)全數滾入資產複利池，專注對抗長期通膨。';
       }
 
+      // --- 現金流月度模擬 (前 60 個月) ---
+      const numMonthsChart = 60;
+      const cashFlowLabels = [];
+      const monthlyInterestIncome = new Array(numMonthsChart).fill(0);
+      const monthlyPrincipalIncome = new Array(numMonthsChart).fill(0);
+
+      for (let i = 0; i < ladderYears; i++) {
+        let currentMaturity = rungMaturities[i];
+        let principal = Number(rungPrincipals[i]) || 0;
+        let halfYearInterest = principal * (bondRet / 2);
+
+        let payoutMonth = currentMaturity;
+        if (payoutMonth <= numMonthsChart) {
+             monthlyPrincipalIncome[Math.ceil(payoutMonth) - 1] += principal;
+        }
+
+        while (payoutMonth > 0) {
+           if (payoutMonth <= numMonthsChart) {
+               monthlyInterestIncome[Math.ceil(payoutMonth) - 1] += halfYearInterest;
+           }
+           payoutMonth -= 6.0;
+        }
+      }
+
+      for (let m = 1; m <= numMonthsChart; m++) {
+        cashFlowLabels.push('第' + m + '月');
+      }
+      
+      if (cashFlowChart) {
+        cashFlowChart.data.labels = cashFlowLabels;
+        cashFlowChart.data.datasets[0].data = monthlyInterestIncome;
+        cashFlowChart.data.datasets[1].data = monthlyPrincipalIncome;
+        cashFlowChart.update();
+      } else {
+        const ctxCF = document.getElementById('cashFlowChart').getContext('2d');
+        cashFlowChart = new Chart(ctxCF, {
+          type: 'bar',
+          data: {
+            labels: cashFlowLabels,
+            datasets: [
+              { label: '錯開的半年債息 ($)', data: monthlyInterestIncome, backgroundColor: '#81c784' },
+              { label: '需變現的債券本金 ($)', data: monthlyPrincipalIncome, backgroundColor: '#64b5f6' }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: { stacked: true },
+              y: {
+                stacked: true,
+                beginAtZero: true,
+                ticks: { callback: (v) => '$' + Number(v).toLocaleString() }
+              }
+            }
+          }
+        });
+      }
+
+      // --- 長期模擬計算 ---
       const labels = [];
       const nominalData = [];
       const realData = [];
@@ -838,7 +903,8 @@
 
       let simStock = targetStockVal;
       let simBond = totalBondValTarget;
-      const stockCapGrowthQuarterly = (stockRet - stockDiv) / 4;
+      // 股票總報酬率滾動（含原先不納入抵扣的股息）
+      const stockCapGrowthQuarterly = stockRet / 4; 
 
       let sustainYears = years;
       let ranOut = false;
@@ -846,7 +912,6 @@
       for (let y = 0; y <= years; y++) {
         labels.push('第 ' + y + ' 年');
         const totalAsset = simStock + simBond;
-        
         const discountFactor = Math.pow(1 + totalInflation, y);
         const realAsset = totalAsset / discountFactor;
 
@@ -855,11 +920,55 @@
 
         const grossAnnualExp = baseAnnualExpense * Math.pow(1 + effectiveInflation, y);
         const annualOtherInc = baseAnnualOtherIncome * Math.pow(1 + effectiveInflation, y);
-        const netAnnualWithdrawal = Math.max(0, grossAnnualExp - annualOtherInc);
+        
+        // 季度基礎開支缺口 (尚未扣除當年債息)
+        const qNetExp = Math.max(0, grossAnnualExp - annualOtherInc) / 4;
+        
+        let yearTotalBondInt = 0;
+        let yearNetShortfall = 0;
 
-        const realNetWithdrawal = netAnnualWithdrawal / discountFactor;
+        if (y < years) {
+          for (let q = 1; q <= 4; q++) {
+            // 每半年派息一次 (假設在Q2和Q4)
+            const qBondInt = (q === 2 || q === 4) ? simBond * (bondRet / 2) : 0;
+            yearTotalBondInt += qBondInt;
 
-        withdrawalNominalData.push(Math.round(netAnnualWithdrawal));
+            const qShortfall = qNetExp - qBondInt;
+            if (qShortfall > 0) {
+              yearNetShortfall += qShortfall; // 累加實際需變現的本金
+              const tot = simStock + simBond;
+              if (tot > 0) {
+                const sProp = simStock / tot;
+                // 按比例變現資產以填補缺口
+                simStock = Math.max(0, simStock - qShortfall * sProp);
+                simBond = Math.max(0, simBond - qShortfall * (1 - sProp));
+              }
+            } else {
+              // 若債息能完全覆蓋開支，剩餘現金進行再投資
+              const surplus = Math.abs(qShortfall);
+              simStock += surplus * stockPctTarget;
+              simBond += surplus * (1 - stockPctTarget);
+            }
+
+            // 股票依據總回報率(含股息)內部增長
+            simStock *= (1 + stockCapGrowthQuarterly);
+          }
+
+          // 每年末進行資產再平衡
+          if ((simStock + simBond) > 0) {
+            const currentTot = simStock + simBond;
+            simStock = currentTot * stockPctTarget;
+            simBond = currentTot * (1 - stockPctTarget);
+          }
+        } else {
+          // 顯示最後一年的理論值
+          yearTotalBondInt = simBond * bondRet;
+          yearNetShortfall = Math.max(0, grossAnnualExp - annualOtherInc - yearTotalBondInt);
+        }
+
+        const realNetWithdrawal = yearNetShortfall / discountFactor;
+
+        withdrawalNominalData.push(Math.round(yearNetShortfall));
         withdrawalRealData.push(Math.round(realNetWithdrawal));
 
         if (totalAsset <= 0) {
@@ -869,49 +978,17 @@
             ranOut = true;
           }
         } else {
-          let rate = (netAnnualWithdrawal / totalAsset) * 100;
+          let rate = (yearNetShortfall / totalAsset) * 100;
           withdrawalRateData.push(rate);
         }
 
-        const qExp = netAnnualWithdrawal / 4;
-        let yearTotalInterest = 0;
-
-        if (y < years) {
-          for (let q = 1; q <= 4; q++) {
-            const qStockDiv = simStock * (stockDiv / 4);
-            const qBondInt = (q === 2 || q === 4) ? simBond * (bondRet / 2) : 0;
-            const qInterest = qStockDiv + qBondInt;
-            yearTotalInterest += qInterest;
-
-            const qShortfall = qExp - qInterest;
-            if (qShortfall > 0) {
-              const tot = simStock + simBond;
-              if (tot > 0) {
-                const sProp = simStock / tot;
-                simStock = Math.max(0, simStock - qShortfall * sProp);
-                simBond = Math.max(0, simBond - qShortfall * (1 - sProp));
-              }
-            } else {
-              const surplus = Math.abs(qShortfall);
-              simStock += surplus * stockPctTarget;
-              simBond += surplus * (1 - stockPctTarget);
-            }
-
-            simStock *= (1 + stockCapGrowthQuarterly);
-          }
-
-          if ((simStock + simBond) > 0) {
-            const currentTot = simStock + simBond;
-            simStock = currentTot * stockPctTarget;
-            simBond = currentTot * (1 - stockPctTarget);
-          }
-        }
-
-        const actualStockPct = (simStock + simBond) > 0 ? (simStock / (simStock + simBond)) * 100 : 0;
+        const actualStockPct = (totalAsset) > 0 ? (simStock / totalAsset) * 100 : 0;
+        
         yearlyRows.push({
           year: y,
-          expense: netAnnualWithdrawal,
-          interest: yearTotalInterest,
+          grossExpense: grossAnnualExp,
+          deductions: annualOtherInc + yearTotalBondInt,
+          netShortfall: yearNetShortfall,
           nominal: totalAsset,
           real: realAsset,
           stockPct: actualStockPct
@@ -945,8 +1022,9 @@
       yearlyRows.forEach(r => {
         const tr = document.createElement('tr');
         tr.innerHTML = '<td>第 ' + r.year + ' 年</td>' +
-          '<td>' + formatCurrency(r.expense) + '</td>' +
-          '<td>' + formatCurrency(r.interest) + '</td>' +
+          '<td>' + formatCurrency(r.grossExpense) + '</td>' +
+          '<td>' + formatCurrency(r.deductions) + '</td>' +
+          '<td>' + formatCurrency(r.netShortfall) + '</td>' +
           '<td>' + formatCurrency(r.nominal) + '</td>' +
           '<td>' + formatCurrency(r.real) + '</td>' +
           '<td>' + r.stockPct.toFixed(1) + '%</td>';
@@ -989,8 +1067,8 @@
           data: {
             labels: labels,
             datasets: [
-              { label: '淨提領金額 ($)', data: withdrawalNominalData, backgroundColor: '#ffb74d' },
-              { label: '實質提領購買力 ($)', data: withdrawalRealData, backgroundColor: '#ba68c8' }
+              { label: '淨變現本金缺口 ($)', data: withdrawalNominalData, backgroundColor: '#ffb74d' },
+              { label: '實質變現購買力 ($)', data: withdrawalRealData, backgroundColor: '#ba68c8' }
             ]
           },
           options: {
@@ -1015,14 +1093,14 @@
           type: 'line',
           data: {
             labels: labels,
-            datasets: [{ label: '年度淨提領率 %', data: withdrawalRateData, borderColor: '#ffd54f', pointStyle: 'circle', pointRadius: 4, fill: false, tension: 0.1, borderWidth: 2, spanGaps: false }]
+            datasets: [{ label: '年度本金變現率 %', data: withdrawalRateData, borderColor: '#ffd54f', pointStyle: 'circle', pointRadius: 4, fill: false, tension: 0.1, borderWidth: 2, spanGaps: false }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
               x: { title: { display: true, text: '退休年數' } },
-              y: { title: { display: true, text: '淨提領率 (%)' }, min: 0, ticks: { callback: (v) => Number(v).toFixed(1) + '%' } }
+              y: { title: { display: true, text: '本金變現率 (%)' }, min: 0, ticks: { callback: (v) => Number(v).toFixed(1) + '%' } }
             }
           }
         });
